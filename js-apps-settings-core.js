@@ -332,9 +332,7 @@ function bindSettingsAppearanceEvents(){
   $$('[data-home-icon-theme]').forEach(function(btn){
     btn.addEventListener('click', function(){ setHomeIconOption('theme', btn.dataset.homeIconTheme); });
   });
-  $$('[data-home-icon-shape]').forEach(function(btn){
-    btn.addEventListener('click', function(){ setHomeIconOption('shape', btn.dataset.homeIconShape); });
-  });
+  bindHomeSliders();
   $$('[data-home-icon-size]').forEach(function(btn){
     btn.addEventListener('click', function(){ setHomeIconOption('size', btn.dataset.homeIconSize); });
   });

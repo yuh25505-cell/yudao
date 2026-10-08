@@ -201,7 +201,6 @@ function applyHomeAppearance(){
   var wallpaper = document.querySelector('.wallpaper');
   if (home) {
     home.setAttribute('data-icon-theme', a.iconTheme);
-    home.setAttribute('data-icon-shape', a.iconShape);
     home.setAttribute('data-icon-size', a.iconSize);
     home.setAttribute('data-icon-labels', a.iconLabels ? 'on' : 'off');
     home.style.setProperty('--dark-icon-brightness', String(1 - a.dimDarkIconAmount / 100));
@@ -218,6 +217,7 @@ function applyHomeAppearance(){
     dock.style.setProperty('--dock-radius', a.dockRadius + 'px');
     dock.style.setProperty('--dock-effective-alpha', String(Math.max(0, Math.min(1, effectiveAlpha))));
   }
+  applyHomeGlassVars(a);
   renderHomeAppIcons();
   renderCalendarPhoto();
   renderMusicCover();
@@ -242,11 +242,7 @@ function renderHomeAppearanceOptions(){
     btn.classList.toggle('is-on', on);
     btn.setAttribute('aria-checked', on ? 'true' : 'false');
   });
-  $$('[data-home-icon-shape]').forEach(function(btn){
-    var on = btn.dataset.homeIconShape === a.iconShape;
-    btn.classList.toggle('is-on', on);
-    btn.setAttribute('aria-checked', on ? 'true' : 'false');
-  });
+  renderHomeSliders(a);
   var dimWallpaper = $('dimDarkWallpaperToggle');
   if (dimWallpaper) { dimWallpaper.classList.toggle('is-on', a.dimDarkWallpaper); dimWallpaper.setAttribute('aria-checked', a.dimDarkWallpaper ? 'true' : 'false'); }
   $$('[data-home-icon-size]').forEach(function(btn){
@@ -302,7 +298,6 @@ function renderHomeAppearanceOptions(){
 function setHomeIconOption(kind, value){
   var a = normalizeHomeAppearance();
   if (kind === 'theme' && ['mono','glass','borderless'].indexOf(value) >= 0) { a.iconTheme = value; if (value === 'borderless') a.iconBorder = 'none'; }
-  if (kind === 'shape' && ['square','soft','round','pill'].indexOf(value) >= 0) a.iconShape = value;
   if (kind === 'size' && ['small','medium','large'].indexOf(value) >= 0) a.iconSize = value;
   applyHomeAppearance();
   saveSettings();
@@ -338,6 +333,82 @@ function setDockLock(kind, on){
   if (kind === 'transparency') a.dockTransparencyLocked = !!on;
   applyHomeAppearance();
   saveSettings();
+}
+
+
+/* ---------- 拉条自定义调节（图标圆角 / 液态玻璃磨砂与清透 / Dock 模糊度）----------
+ * 每条拉条都带「锁定」：锁定后拉条置灰、数值不可再改，设置会随外观一起保存。 */
+var HOME_SLIDERS = {
+  iconRadius:  { lockKey: 'iconRadiusLocked',  min: 0, max: 50,  unit: '%' },
+  iconBlur:    { lockKey: 'iconBlurLocked',    min: 0, max: 30,  unit: 'px' },
+  iconClarity: { lockKey: 'iconClarityLocked', min: 0, max: 100, unit: '%' },
+  dockBlur:    { lockKey: 'dockBlurLocked',    min: 0, max: 60,  unit: 'px' }
+};
+
+/* 写入全局 CSS 变量：桌面、Dock 与设置里的图标预览共用同一组参数。
+ * 清透度 0→100：底板填充从 2 倍（偏奶白）渐变到 0（完全通透），50 为原有观感。 */
+function applyHomeGlassVars(a){
+  var st = document.documentElement.style;
+  st.setProperty('--icon-radius', a.iconRadius + '%');
+  st.setProperty('--lq-blur', a.iconBlur + 'px');
+  st.setProperty('--lq-fill', String(Math.max(0, 2 * (1 - a.iconClarity / 100))));
+  st.setProperty('--dock-blur', a.dockBlur + 'px');
+}
+
+function paintHomeSlider(name, a){
+  var d = HOME_SLIDERS[name];
+  var range = $(name + 'Range'), valueEl = $(name + 'Value'), lock = $(name + 'Lock');
+  var v = a[name], locked = a[d.lockKey] === true;
+  if (range) {
+    range.value = String(v);
+    range.disabled = locked;
+    range.style.setProperty('--dock-range-pct', ((v - d.min) / (d.max - d.min) * 100) + '%');
+  }
+  if (valueEl) valueEl.textContent = String(v) + d.unit;
+  if (lock) {
+    lock.classList.toggle('is-on', locked);
+    lock.setAttribute('aria-pressed', locked ? 'true' : 'false');
+    lock.textContent = locked ? '已锁定' : '锁定';
+  }
+}
+
+function renderHomeSliders(a){
+  Object.keys(HOME_SLIDERS).forEach(function(name){ paintHomeSlider(name, a); });
+}
+
+function setHomeSlider(name, value){
+  var d = HOME_SLIDERS[name];
+  var a = State.settings && State.settings.homeAppearance;
+  if (!d || !a || a[d.lockKey] === true) return;
+  var n = Number(value);
+  if (!Number.isFinite(n)) return;
+  a[name] = Math.max(d.min, Math.min(d.max, Math.round(n)));
+  paintHomeSlider(name, a);
+  applyHomeGlassVars(a);
+  scheduleSettingsSave(120);
+}
+
+function setHomeSliderLock(name, on){
+  var d = HOME_SLIDERS[name];
+  if (!d) return;
+  var a = normalizeHomeAppearance();
+  a[d.lockKey] = !!on;
+  paintHomeSlider(name, a);
+  saveSettings();
+}
+
+function bindHomeSliders(){
+  Object.keys(HOME_SLIDERS).forEach(function(name){
+    var range = $(name + 'Range');
+    if (range) {
+      range.addEventListener('input', function(){ setHomeSlider(name, range.value); });
+      range.addEventListener('change', function(){ saveSettings(); });
+    }
+    var lock = $(name + 'Lock');
+    if (lock) lock.addEventListener('click', function(){
+      setHomeSliderLock(name, !normalizeHomeAppearance()[HOME_SLIDERS[name].lockKey]);
+    });
+  });
 }
 
 

@@ -191,7 +191,7 @@ html[data-theme="dark"] .home[data-dim-dark-wallpaper="off"] .app-icon.has-custo
 
 .dock{border-radius:var(--dock-radius,5px);background:rgba(255,255,255,var(--dock-effective-alpha,.075))}
 
-.dock-control-row{display:grid;grid-template-columns:64px minmax(0,1fr) 48px 46px;align-items:center;column-gap:8px;min-height:58px;padding:12px 16px}
+.dock-control-row{display:grid;grid-template-columns:72px minmax(0,1fr) 48px 46px;align-items:center;column-gap:8px;min-height:58px;padding:12px 16px}
 
 .dock-control-label{min-width:0;white-space:nowrap;font-size:calc(13.5px * var(--island-font-size-scale));font-weight:var(--island-fw-600);color:var(--fg)}
 
@@ -255,12 +255,6 @@ html[data-theme="dark"] .home[data-dim-dark-wallpaper="off"] .app-icon.has-custo
 
 .home[data-icon-labels="off"] .app-name{display:none}
 
-.home[data-icon-shape="soft"] .app-icon,.home[data-icon-shape="soft"] .dock .app-icon{border-radius:15px}
-
-.home[data-icon-shape="round"] .app-icon,.home[data-icon-shape="round"] .dock .app-icon{border-radius:50%}
-
-.home[data-icon-shape="pill"] .app-icon,.home[data-icon-shape="pill"] .dock .app-icon{border-radius:18px}
-
 .home[data-icon-theme="borderless"] .app-icon{background:transparent;color:var(--tile-fg);border:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
 
 @media (max-width:390px){
@@ -272,19 +266,19 @@ html[data-theme="dark"] .home[data-dim-dark-wallpaper="off"] .app-icon.has-custo
  * 底板本身几乎透明（只做轻微折射与极淡的烟色，避免发灰），质感主要来自边缘高光与内发光。 */
 .app-icon.is-liquid{
   --lq-bg:
-    radial-gradient(120% 90% at 16% -8%, rgba(255,255,255,.40), rgba(255,255,255,0) 56%),
-    radial-gradient(90% 70% at 90% 112%, rgba(255,255,255,.22), rgba(255,255,255,0) 60%),
-    linear-gradient(160deg, rgba(24,28,38,.13), rgba(24,28,38,.04));
+    radial-gradient(120% 90% at 16% -8%, rgba(255,255,255,calc(.40 * var(--lq-fill,1))), rgba(255,255,255,0) 56%),
+    radial-gradient(90% 70% at 90% 112%, rgba(255,255,255,calc(.22 * var(--lq-fill,1))), rgba(255,255,255,0) 60%),
+    linear-gradient(160deg, rgba(24,28,38,calc(.13 * var(--lq-fill,1))), rgba(24,28,38,calc(.04 * var(--lq-fill,1))));
   position:relative; isolation:isolate; overflow:hidden; border:none; color:#fff;
   border-radius:22.5%;
   background:var(--lq-bg);
-  -webkit-backdrop-filter:blur(10px) saturate(1.9);
-  backdrop-filter:blur(10px) saturate(1.9);
+  -webkit-backdrop-filter:blur(var(--lq-blur,10px)) saturate(1.9);
+  backdrop-filter:blur(var(--lq-blur,10px)) saturate(1.9);
   box-shadow:
-    inset 0 1.5px 1px rgba(255,255,255,.70),
-    inset 0 -1.5px 1px rgba(255,255,255,.34),
-    inset 1.5px 0 1px rgba(255,255,255,.24),
-    inset -1.5px 0 1px rgba(255,255,255,.24),
+    inset 0 .6px .4px rgba(255,255,255,.70),
+    inset 0 -.6px .4px rgba(255,255,255,.34),
+    inset .6px 0 .4px rgba(255,255,255,.24),
+    inset -.6px 0 .4px rgba(255,255,255,.24),
     inset 0 0 10px rgba(255,255,255,.14),
     0 8px 18px rgba(0,0,0,.16),
     0 1px 2px rgba(0,0,0,.12);
@@ -292,41 +286,50 @@ html[data-theme="dark"] .home[data-dim-dark-wallpaper="off"] .app-icon.has-custo
 
 html[data-theme="dark"] .app-icon.is-liquid{
   --lq-bg:
-    radial-gradient(120% 90% at 16% -8%, rgba(255,255,255,.34), rgba(255,255,255,0) 56%),
-    radial-gradient(90% 70% at 90% 112%, rgba(255,255,255,.16), rgba(255,255,255,0) 60%),
-    linear-gradient(160deg, rgba(255,255,255,.13), rgba(255,255,255,.03));
+    radial-gradient(120% 90% at 16% -8%, rgba(255,255,255,calc(.34 * var(--lq-fill,1))), rgba(255,255,255,0) 56%),
+    radial-gradient(90% 70% at 90% 112%, rgba(255,255,255,calc(.16 * var(--lq-fill,1))), rgba(255,255,255,0) 60%),
+    linear-gradient(160deg, rgba(255,255,255,calc(.13 * var(--lq-fill,1))), rgba(255,255,255,calc(.03 * var(--lq-fill,1))));
   box-shadow:
-    inset 0 1.5px 1px rgba(255,255,255,.60),
-    inset 0 -1.5px 1px rgba(255,255,255,.24),
-    inset 1.5px 0 1px rgba(255,255,255,.18),
-    inset -1.5px 0 1px rgba(255,255,255,.18),
+    inset 0 .6px .4px rgba(255,255,255,.60),
+    inset 0 -.6px .4px rgba(255,255,255,.24),
+    inset .6px 0 .4px rgba(255,255,255,.18),
+    inset -.6px 0 .4px rgba(255,255,255,.18),
     inset 0 0 10px rgba(255,255,255,.10),
     0 8px 20px rgba(0,0,0,.40),
     0 1px 2px rgba(0,0,0,.30);
 }
 
-/* Dock：嵌套的 backdrop-filter 只能“看到”父级自身，会让里面的图标发白、与桌面图标不一致。
- * 液态玻璃下 Dock 自己不再使用 backdrop-filter，改由 ::before 负责模糊（与图标同级），
+/* Dock：与图标主题无关，始终是 iOS 液态玻璃。
+ * 嵌套的 backdrop-filter 只能“看到”父级自身，会让里面的图标发白，所以 Dock 自己不用 backdrop-filter，
+ * 由 ::before 负责模糊（模糊度 = --dock-blur，设置里可调），::after 画极细的边缘高光。
  * 图标因此和桌面上的一样直接折射壁纸；“Dock 透明度 / 圆角”滑块照常生效。 */
-.home[data-icon-theme="glass"] .dock{
-  position:relative; isolation:isolate;
+.home .dock{
+  position:relative; isolation:isolate; border:none;
   -webkit-backdrop-filter:none; backdrop-filter:none;
   background:rgba(255,255,255,calc(var(--dock-effective-alpha, .075) * .32));
   box-shadow:
-    inset 0 1.5px 1px rgba(255,255,255,.55),
-    inset 0 -1.5px 1px rgba(255,255,255,.22),
+    inset 0 .6px .4px rgba(255,255,255,.55),
+    inset 0 -.6px .4px rgba(255,255,255,.22),
     inset 0 0 12px rgba(255,255,255,.10),
     0 12px 30px rgba(0,0,0,.20);
 }
 
-.home[data-icon-theme="glass"] .dock::before{
+.home .dock::before{
   content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit; pointer-events:none;
-  -webkit-backdrop-filter:blur(16px) saturate(1.6); backdrop-filter:blur(16px) saturate(1.6);
+  -webkit-backdrop-filter:blur(var(--dock-blur,16px)) saturate(1.6); backdrop-filter:blur(var(--dock-blur,16px)) saturate(1.6);
+}
+
+.home .dock::after{
+  content:""; position:absolute; inset:0; z-index:0; border-radius:inherit; padding:var(--lq-rim,.6px); pointer-events:none;
+  background:linear-gradient(135deg, rgba(255,255,255,.85), rgba(255,255,255,.05) 36%, rgba(255,255,255,.05) 64%, rgba(255,255,255,.65));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
 }
 
 /* 边缘折射高光：左上与右下最亮、两侧渐隐，模拟玻璃边缘受光 */
 .app-icon.is-liquid::before{
-  content:""; position:absolute; inset:0; z-index:2; border-radius:inherit; padding:1.2px; pointer-events:none;
+  content:""; position:absolute; inset:0; z-index:2; border-radius:inherit; padding:var(--lq-rim,.6px); pointer-events:none;
   background:linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.06) 36%, rgba(255,255,255,.06) 64%, rgba(255,255,255,.78));
   -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite:xor;
@@ -336,7 +339,7 @@ html[data-theme="dark"] .app-icon.is-liquid{
 /* 顶部柔光：一层很淡的弧形高光 */
 .app-icon.is-liquid::after{
   content:""; position:absolute; left:0; right:0; top:0; height:55%; z-index:1;
-  background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0)); pointer-events:none;
+  background:linear-gradient(180deg, rgba(255,255,255,calc(.16 * var(--lq-fill,1))), rgba(255,255,255,0)); pointer-events:none;
 }
 
 .app-icon.is-liquid .lq-glyph{ position:relative; z-index:3; width:100%; height:100%; display:grid; place-items:center; }
@@ -351,12 +354,9 @@ html[data-theme="dark"] .app-icon.is-liquid{
 .app:active .app-icon.is-liquid,
 .dock .app:active .app-icon.is-liquid{ background:var(--lq-bg); color:#fff; filter:brightness(.88); }
 
-/* 形状选项同样作用于液态玻璃（方形 = iOS 连续圆角） */
-.home[data-icon-shape] .app-icon.is-liquid,
-.home[data-icon-shape] .dock .app-icon.is-liquid{ border-radius:22.5%; }
-.home[data-icon-shape="soft"] .app-icon.is-liquid,
-.home[data-icon-shape="soft"] .dock .app-icon.is-liquid{ border-radius:30%; }
-.home[data-icon-shape="round"] .app-icon.is-liquid,
-.home[data-icon-shape="round"] .dock .app-icon.is-liquid{ border-radius:50%; }
-.home[data-icon-shape="pill"] .app-icon.is-liquid,
-.home[data-icon-shape="pill"] .dock .app-icon.is-liquid{ border-radius:18%; }
+/* 图标圆角：由「图标调节 › 圆角」拉条控制（%，相对图标边长），对所有图标主题生效 */
+.home .app-icon,
+.home .dock .app-icon,
+.home .app-icon.is-liquid,
+.home .dock .app-icon.is-liquid,
+.app-icon.icon-library-preview{ border-radius:var(--icon-radius,9%); }

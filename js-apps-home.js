@@ -50,9 +50,44 @@ function getSystemTheme(){
 }
 
 
+/* ---------- 液态玻璃图标主题（glass）----------
+ * 与“文字”主题完全分开：不显示文字首字，而是用一套专属的实心 SVG 符号，
+ * 配合 css-apps-home.css 里 .app-icon.is-liquid 的折射、边缘高光与内发光。 */
+var LIQUID_GLYPHS = {
+  '聊天': '<path d="M12 3.2c-5 0-9 3.4-9 7.6 0 2.3 1.2 4.3 3.1 5.7-.1 1.3-.7 2.5-1.6 3.4-.3.3-.1.9.4.9 2-.2 3.7-1 4.7-1.7.8.2 1.6.2 2.4.2 5 0 9-3.4 9-7.6S17 3.2 12 3.2z"/>',
+  '通讯录': '<circle cx="12" cy="7.6" r="4.2"/><path d="M3.8 19.6c0-3.9 3.6-6.6 8.2-6.6s8.2 2.7 8.2 6.6c0 .7-.5 1.2-1.2 1.2H5c-.7 0-1.2-.5-1.2-1.2z"/>',
+  '相册': '<path fill-rule="evenodd" d="M5.6 3.6h12.8A2.6 2.6 0 0 1 21 6.2v11.6a2.6 2.6 0 0 1-2.6 2.6H5.6A2.6 2.6 0 0 1 3 17.8V6.2a2.6 2.6 0 0 1 2.6-2.6zM9 7.4a1.9 1.9 0 1 0 0 3.8 1.9 1.9 0 0 0 0-3.8zM5.2 18l4.1-4.7 3 3 2.5-2.8L19 18z"/>',
+  '日历': '<path fill-rule="evenodd" d="M7.2 2.6c.6 0 1 .4 1 1V5h7.6V3.6c0-.6.4-1 1-1s1 .4 1 1V5h.2A2.8 2.8 0 0 1 21 7.8v10.4a2.8 2.8 0 0 1-2.8 2.8H5.8A2.8 2.8 0 0 1 3 18.2V7.8A2.8 2.8 0 0 1 5.8 5H6.2V3.6c0-.6.4-1 1-1zM6.8 10.8h2.4v2.4H6.8zm4 0h2.4v2.4h-2.4zm4 0h2.4v2.4h-2.4zM6.8 15.2h2.4v2.4H6.8zm4 0h2.4v2.4h-2.4z"/>',
+  '备忘录': '<path fill-rule="evenodd" d="M7.4 3h9.2A3.4 3.4 0 0 1 20 6.4v11.2a3.4 3.4 0 0 1-3.4 3.4H7.4A3.4 3.4 0 0 1 4 17.6V6.4A3.4 3.4 0 0 1 7.4 3zM8 7.6h8v1.7H8zm0 3.6h8v1.7H8zm0 3.6h5v1.7H8z"/>',
+  '天气': '<circle cx="8.2" cy="8.4" r="3.7" opacity=".7"/><path d="M7.6 20a4.3 4.3 0 0 1-.4-8.6 5.6 5.6 0 0 1 10.6 1.4A3.6 3.6 0 0 1 17.4 20z"/>',
+  '时钟': '<path fill-rule="evenodd" d="M12 2.4a9.6 9.6 0 1 0 0 19.2 9.6 9.6 0 0 0 0-19.2zM11 6.4h2v5.4l3.5 2.1-1 1.7-4.5-2.7z"/>',
+  '设置': '<g id="lqTeeth"><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(45 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(90 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(135 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(180 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(225 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(270 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(315 12 12)"/></g><circle cx="12" cy="12" r="5.5" fill="none" stroke="url(#lqGlyphGrad)" stroke-width="3.8"/>',
+  '电话': '<path transform="rotate(-135 12 12)" d="M3.2 9.4c0-1.2.6-2 1.7-2.5 4.2-1.7 10.7-1.7 14.2 0 1.1.5 1.7 1.3 1.7 2.5v1.3c0 .9-.6 1.5-1.5 1.6l-2.6.3c-.8.1-1.4-.4-1.5-1.2l-.2-1.7c-.1-.5-.4-.8-.9-.9-1.3-.2-2.6-.2-3.9 0-.5.1-.8.4-.9.9l-.2 1.7c-.1.8-.7 1.3-1.5 1.2l-2.6-.3c-.9-.1-1.5-.7-1.5-1.6z"/>',
+  '浏览器': '<path fill-rule="evenodd" d="M12 2.4a9.6 9.6 0 1 0 0 19.2 9.6 9.6 0 0 0 0-19.2zM16.4 7.6l-2.2 6.6-6.6 2.2 2.2-6.6z"/>',
+  '世界书': '<path d="M2.8 5.8c3.1-.9 6.2-.6 8.4 1v13c-2.3-1.5-5.4-1.8-8.4-.9z"/><path d="M21.2 5.8c-3.1-.9-6.2-.6-8.4 1v13c2.3-1.5 5.4-1.8 8.4-.9z"/>',
+  '音乐': '<ellipse cx="7" cy="17.8" rx="3.1" ry="2.7"/><ellipse cx="17" cy="15.8" rx="3.1" ry="2.7"/><rect x="8.9" y="5.6" width="2" height="12.2"/><rect x="18.9" y="3.6" width="2" height="12.2"/><path d="M8.9 5.2l12-2.6v4l-12 2.6z"/>'
+};
+
+function ensureLiquidDefs(){
+  if (document.getElementById('lqDefs')) return;
+  var holder = document.createElement('div');
+  holder.id = 'lqDefs';
+  holder.setAttribute('aria-hidden', 'true');
+  holder.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
+  holder.innerHTML = '<svg width="0" height="0" focusable="false"><defs><linearGradient id="lqGlyphGrad" gradientUnits="userSpaceOnUse" x1="0" y1="2" x2="0" y2="22"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#f6f7fb"/><stop offset="1" stop-color="#dde1ea"/></linearGradient></defs></svg>';
+  document.body.appendChild(holder);
+}
+
+function getHomeIconTheme(){
+  var t = State.settings && State.settings.homeAppearance && State.settings.homeAppearance.iconTheme;
+  return ['mono','glass','borderless'].indexOf(t) >= 0 ? t : 'mono';
+}
+
 function setAppIconVisual(iconEl, appName, imageData){
   if (!iconEl) return;
+  var liquid = getHomeIconTheme() === 'glass';
   iconEl.classList.toggle('has-custom-image', !!imageData);
+  iconEl.classList.toggle('is-liquid', liquid);
   iconEl.innerHTML = '';
   if (imageData) {
     var img = document.createElement('img');
@@ -60,6 +95,13 @@ function setAppIconVisual(iconEl, appName, imageData){
     img.alt = '';
     img.setAttribute('aria-hidden', 'true');
     iconEl.appendChild(img);
+  } else if (liquid && LIQUID_GLYPHS[appName]) {
+    ensureLiquidDefs();
+    var holder = document.createElement('span');
+    holder.className = 'lq-glyph';
+    holder.setAttribute('aria-hidden', 'true');
+    holder.innerHTML = '<svg viewBox="0 0 24 24" fill="url(#lqGlyphGrad)">' + LIQUID_GLYPHS[appName] + '</svg>';
+    iconEl.appendChild(holder);
   } else {
     var glyph = document.createElement('span');
     glyph.className = 'app-glyph';
@@ -259,7 +301,7 @@ function renderHomeAppearanceOptions(){
 
 function setHomeIconOption(kind, value){
   var a = normalizeHomeAppearance();
-  if (kind === 'theme' && ['mono','solid','outline','glass','borderless'].indexOf(value) >= 0) { a.iconTheme = value; if (value === 'borderless') a.iconBorder = 'none'; }
+  if (kind === 'theme' && ['mono','glass','borderless'].indexOf(value) >= 0) { a.iconTheme = value; if (value === 'borderless') a.iconBorder = 'none'; }
   if (kind === 'shape' && ['square','soft','round','pill'].indexOf(value) >= 0) a.iconShape = value;
   if (kind === 'size' && ['small','medium','large'].indexOf(value) >= 0) a.iconSize = value;
   applyHomeAppearance();

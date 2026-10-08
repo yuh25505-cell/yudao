@@ -259,7 +259,7 @@ function saveMoments(){ return IslandDB.set('island.moments', MOMENTS); }
 function normalizeHomeAppearance(){
   var incoming = (State.settings && State.settings.homeAppearance) || {};
   var base = clone(DEFAULT_HOME_APPEARANCE);
-  base.iconTheme = ['mono','solid','outline','glass','borderless'].indexOf(incoming.iconTheme) >= 0 ? incoming.iconTheme : base.iconTheme;
+  base.iconTheme = ['mono','glass','borderless'].indexOf(incoming.iconTheme) >= 0 ? incoming.iconTheme : base.iconTheme;
   base.iconShape = ['square','soft','round','pill'].indexOf(incoming.iconShape) >= 0 ? incoming.iconShape : base.iconShape;
   base.iconSize = ['small','medium','large'].indexOf(incoming.iconSize) >= 0 ? incoming.iconSize : base.iconSize;
   base.iconLabels = incoming.iconLabels !== false;

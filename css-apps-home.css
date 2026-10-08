@@ -92,6 +92,81 @@
 
 .dock .app:active{transform:scale(.9);}
 
+
+/* ===== 液态玻璃图标（iOS Liquid Glass）=====
+ * 选择器直接挂在 .app-icon.is-liquid 上，所以桌面、Dock 与设置里的图标预览都一致。 */
+.app-icon.is-liquid{
+  --lq-bg:
+    radial-gradient(130% 95% at 18% -6%, rgba(255,255,255,.46), rgba(255,255,255,0) 58%),
+    radial-gradient(90% 70% at 88% 112%, rgba(255,255,255,.30), rgba(255,255,255,0) 62%),
+    linear-gradient(160deg, rgba(150,155,166,.52), rgba(112,118,130,.40));
+  position:relative; isolation:isolate; overflow:hidden; border:none; color:#fff;
+  border-radius:22.5%;
+  background:var(--lq-bg);
+  -webkit-backdrop-filter:blur(22px) saturate(1.9) brightness(1.06);
+  backdrop-filter:blur(22px) saturate(1.9) brightness(1.06);
+  box-shadow:
+    inset 0 1.5px 1px rgba(255,255,255,.62),
+    inset 0 -1.5px 1px rgba(255,255,255,.26),
+    inset 1.5px 0 1px rgba(255,255,255,.20),
+    inset -1.5px 0 1px rgba(255,255,255,.20),
+    inset 0 0 16px rgba(255,255,255,.20),
+    0 10px 22px rgba(0,0,0,.22),
+    0 1px 3px rgba(0,0,0,.16);
+}
+
+html[data-theme="dark"] .app-icon.is-liquid{
+  --lq-bg:
+    radial-gradient(130% 95% at 18% -6%, rgba(255,255,255,.34), rgba(255,255,255,0) 58%),
+    radial-gradient(90% 70% at 88% 112%, rgba(255,255,255,.16), rgba(255,255,255,0) 62%),
+    linear-gradient(160deg, rgba(255,255,255,.20), rgba(255,255,255,.07));
+  box-shadow:
+    inset 0 1.5px 1px rgba(255,255,255,.55),
+    inset 0 -1.5px 1px rgba(255,255,255,.20),
+    inset 1.5px 0 1px rgba(255,255,255,.16),
+    inset -1.5px 0 1px rgba(255,255,255,.16),
+    inset 0 0 16px rgba(255,255,255,.12),
+    0 10px 24px rgba(0,0,0,.45),
+    0 1px 3px rgba(0,0,0,.32);
+}
+
+/* 边缘折射高光：左上与右下最亮、两侧渐隐，模拟玻璃边缘受光 */
+.app-icon.is-liquid::before{
+  content:""; position:absolute; inset:0; z-index:2; border-radius:inherit; padding:1.2px; pointer-events:none;
+  background:linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.06) 36%, rgba(255,255,255,.06) 64%, rgba(255,255,255,.78));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+/* 顶部柔光：一层很淡的弧形高光 */
+.app-icon.is-liquid::after{
+  content:""; position:absolute; left:0; right:0; top:0; height:55%; z-index:1;
+  background:linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0)); pointer-events:none;
+}
+
+.app-icon.is-liquid .lq-glyph{ position:relative; z-index:3; width:100%; height:100%; display:grid; place-items:center; }
+
+.app-icon.is-liquid .lq-glyph svg{
+  width:54%; height:54%; display:block; overflow:visible; stroke:none;
+  filter:drop-shadow(0 0 .6px rgba(255,255,255,.65)) drop-shadow(0 1.6px 2.2px rgba(0,0,0,.30));
+}
+
+.app-icon.is-liquid.has-custom-image img{ position:relative; z-index:0; border-radius:inherit; }
+
+.app:active .app-icon.is-liquid,
+.dock .app:active .app-icon.is-liquid{ background:var(--lq-bg); color:#fff; filter:brightness(.88); }
+
+/* 形状选项同样作用于液态玻璃（方形 = iOS 连续圆角） */
+.home[data-icon-shape] .app-icon.is-liquid,
+.home[data-icon-shape] .dock .app-icon.is-liquid{ border-radius:22.5%; }
+.home[data-icon-shape="soft"] .app-icon.is-liquid,
+.home[data-icon-shape="soft"] .dock .app-icon.is-liquid{ border-radius:30%; }
+.home[data-icon-shape="round"] .app-icon.is-liquid,
+.home[data-icon-shape="round"] .dock .app-icon.is-liquid{ border-radius:50%; }
+.home[data-icon-shape="pill"] .app-icon.is-liquid,
+.home[data-icon-shape="pill"] .dock .app-icon.is-liquid{ border-radius:18%; }
+
 @media (max-width:390px){
 .home-body{padding-left:16px;padding-right:16px;}
 .home-grid,.home-app-block{gap:var(--home-gap-y,14px) 5px;}
@@ -259,12 +334,6 @@ html[data-theme="dark"] .home[data-dim-dark-wallpaper="off"] .app-icon.has-custo
 .home[data-icon-shape="round"] .app-icon,.home[data-icon-shape="round"] .dock .app-icon{border-radius:50%}
 
 .home[data-icon-shape="pill"] .app-icon,.home[data-icon-shape="pill"] .dock .app-icon{border-radius:18px}
-
-.home[data-icon-theme="solid"] .app-icon{background:var(--tile-fg);color:var(--bg);border-color:var(--tile-fg)}
-
-.home[data-icon-theme="outline"] .app-icon{background:transparent;color:var(--tile-fg);box-shadow:inset 0 0 0 1px var(--tile-border)}
-
-.home[data-icon-theme="glass"] .app-icon{background:var(--home-surface);color:var(--tile-fg);border-color:var(--home-border);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 
 .home[data-icon-theme="borderless"] .app-icon{background:transparent;color:var(--tile-fg);border:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
 

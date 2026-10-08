@@ -93,80 +93,6 @@
 .dock .app:active{transform:scale(.9);}
 
 
-/* ===== 液态玻璃图标（iOS Liquid Glass）=====
- * 选择器直接挂在 .app-icon.is-liquid 上，所以桌面、Dock 与设置里的图标预览都一致。 */
-.app-icon.is-liquid{
-  --lq-bg:
-    radial-gradient(130% 95% at 18% -6%, rgba(255,255,255,.46), rgba(255,255,255,0) 58%),
-    radial-gradient(90% 70% at 88% 112%, rgba(255,255,255,.30), rgba(255,255,255,0) 62%),
-    linear-gradient(160deg, rgba(150,155,166,.52), rgba(112,118,130,.40));
-  position:relative; isolation:isolate; overflow:hidden; border:none; color:#fff;
-  border-radius:22.5%;
-  background:var(--lq-bg);
-  -webkit-backdrop-filter:blur(22px) saturate(1.9) brightness(1.06);
-  backdrop-filter:blur(22px) saturate(1.9) brightness(1.06);
-  box-shadow:
-    inset 0 1.5px 1px rgba(255,255,255,.62),
-    inset 0 -1.5px 1px rgba(255,255,255,.26),
-    inset 1.5px 0 1px rgba(255,255,255,.20),
-    inset -1.5px 0 1px rgba(255,255,255,.20),
-    inset 0 0 16px rgba(255,255,255,.20),
-    0 10px 22px rgba(0,0,0,.22),
-    0 1px 3px rgba(0,0,0,.16);
-}
-
-html[data-theme="dark"] .app-icon.is-liquid{
-  --lq-bg:
-    radial-gradient(130% 95% at 18% -6%, rgba(255,255,255,.34), rgba(255,255,255,0) 58%),
-    radial-gradient(90% 70% at 88% 112%, rgba(255,255,255,.16), rgba(255,255,255,0) 62%),
-    linear-gradient(160deg, rgba(255,255,255,.20), rgba(255,255,255,.07));
-  box-shadow:
-    inset 0 1.5px 1px rgba(255,255,255,.55),
-    inset 0 -1.5px 1px rgba(255,255,255,.20),
-    inset 1.5px 0 1px rgba(255,255,255,.16),
-    inset -1.5px 0 1px rgba(255,255,255,.16),
-    inset 0 0 16px rgba(255,255,255,.12),
-    0 10px 24px rgba(0,0,0,.45),
-    0 1px 3px rgba(0,0,0,.32);
-}
-
-/* 边缘折射高光：左上与右下最亮、两侧渐隐，模拟玻璃边缘受光 */
-.app-icon.is-liquid::before{
-  content:""; position:absolute; inset:0; z-index:2; border-radius:inherit; padding:1.2px; pointer-events:none;
-  background:linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.06) 36%, rgba(255,255,255,.06) 64%, rgba(255,255,255,.78));
-  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite:xor;
-  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-}
-
-/* 顶部柔光：一层很淡的弧形高光 */
-.app-icon.is-liquid::after{
-  content:""; position:absolute; left:0; right:0; top:0; height:55%; z-index:1;
-  background:linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0)); pointer-events:none;
-}
-
-.app-icon.is-liquid .lq-glyph{ position:relative; z-index:3; width:100%; height:100%; display:grid; place-items:center; }
-
-.app-icon.is-liquid .lq-glyph svg{
-  width:54%; height:54%; display:block; overflow:visible; stroke:none;
-  filter:drop-shadow(0 0 .6px rgba(255,255,255,.65)) drop-shadow(0 1.6px 2.2px rgba(0,0,0,.30));
-}
-
-.app-icon.is-liquid.has-custom-image img{ position:relative; z-index:0; border-radius:inherit; }
-
-.app:active .app-icon.is-liquid,
-.dock .app:active .app-icon.is-liquid{ background:var(--lq-bg); color:#fff; filter:brightness(.88); }
-
-/* 形状选项同样作用于液态玻璃（方形 = iOS 连续圆角） */
-.home[data-icon-shape] .app-icon.is-liquid,
-.home[data-icon-shape] .dock .app-icon.is-liquid{ border-radius:22.5%; }
-.home[data-icon-shape="soft"] .app-icon.is-liquid,
-.home[data-icon-shape="soft"] .dock .app-icon.is-liquid{ border-radius:30%; }
-.home[data-icon-shape="round"] .app-icon.is-liquid,
-.home[data-icon-shape="round"] .dock .app-icon.is-liquid{ border-radius:50%; }
-.home[data-icon-shape="pill"] .app-icon.is-liquid,
-.home[data-icon-shape="pill"] .dock .app-icon.is-liquid{ border-radius:18%; }
-
 @media (max-width:390px){
 .home-body{padding-left:16px;padding-right:16px;}
 .home-grid,.home-app-block{gap:var(--home-gap-y,14px) 5px;}
@@ -340,3 +266,97 @@ html[data-theme="dark"] .home[data-dim-dark-wallpaper="off"] .app-icon.has-custo
 @media (max-width:390px){
 .app-icon{ width:54px; }
 }
+
+/* ===== 液态玻璃图标（iOS Liquid Glass）=====
+ * 选择器直接挂在 .app-icon.is-liquid 上，所以桌面、Dock 与设置里的图标预览都一致。
+ * 底板本身几乎透明（只做轻微折射与极淡的烟色，避免发灰），质感主要来自边缘高光与内发光。 */
+.app-icon.is-liquid{
+  --lq-bg:
+    radial-gradient(120% 90% at 16% -8%, rgba(255,255,255,.40), rgba(255,255,255,0) 56%),
+    radial-gradient(90% 70% at 90% 112%, rgba(255,255,255,.22), rgba(255,255,255,0) 60%),
+    linear-gradient(160deg, rgba(24,28,38,.13), rgba(24,28,38,.04));
+  position:relative; isolation:isolate; overflow:hidden; border:none; color:#fff;
+  border-radius:22.5%;
+  background:var(--lq-bg);
+  -webkit-backdrop-filter:blur(10px) saturate(1.9);
+  backdrop-filter:blur(10px) saturate(1.9);
+  box-shadow:
+    inset 0 1.5px 1px rgba(255,255,255,.70),
+    inset 0 -1.5px 1px rgba(255,255,255,.34),
+    inset 1.5px 0 1px rgba(255,255,255,.24),
+    inset -1.5px 0 1px rgba(255,255,255,.24),
+    inset 0 0 10px rgba(255,255,255,.14),
+    0 8px 18px rgba(0,0,0,.16),
+    0 1px 2px rgba(0,0,0,.12);
+}
+
+html[data-theme="dark"] .app-icon.is-liquid{
+  --lq-bg:
+    radial-gradient(120% 90% at 16% -8%, rgba(255,255,255,.34), rgba(255,255,255,0) 56%),
+    radial-gradient(90% 70% at 90% 112%, rgba(255,255,255,.16), rgba(255,255,255,0) 60%),
+    linear-gradient(160deg, rgba(255,255,255,.13), rgba(255,255,255,.03));
+  box-shadow:
+    inset 0 1.5px 1px rgba(255,255,255,.60),
+    inset 0 -1.5px 1px rgba(255,255,255,.24),
+    inset 1.5px 0 1px rgba(255,255,255,.18),
+    inset -1.5px 0 1px rgba(255,255,255,.18),
+    inset 0 0 10px rgba(255,255,255,.10),
+    0 8px 20px rgba(0,0,0,.40),
+    0 1px 2px rgba(0,0,0,.30);
+}
+
+/* Dock：嵌套的 backdrop-filter 只能“看到”父级自身，会让里面的图标发白、与桌面图标不一致。
+ * 液态玻璃下 Dock 自己不再使用 backdrop-filter，改由 ::before 负责模糊（与图标同级），
+ * 图标因此和桌面上的一样直接折射壁纸；“Dock 透明度 / 圆角”滑块照常生效。 */
+.home[data-icon-theme="glass"] .dock{
+  position:relative; isolation:isolate;
+  -webkit-backdrop-filter:none; backdrop-filter:none;
+  background:rgba(255,255,255,calc(var(--dock-effective-alpha, .075) * .32));
+  box-shadow:
+    inset 0 1.5px 1px rgba(255,255,255,.55),
+    inset 0 -1.5px 1px rgba(255,255,255,.22),
+    inset 0 0 12px rgba(255,255,255,.10),
+    0 12px 30px rgba(0,0,0,.20);
+}
+
+.home[data-icon-theme="glass"] .dock::before{
+  content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit; pointer-events:none;
+  -webkit-backdrop-filter:blur(16px) saturate(1.6); backdrop-filter:blur(16px) saturate(1.6);
+}
+
+/* 边缘折射高光：左上与右下最亮、两侧渐隐，模拟玻璃边缘受光 */
+.app-icon.is-liquid::before{
+  content:""; position:absolute; inset:0; z-index:2; border-radius:inherit; padding:1.2px; pointer-events:none;
+  background:linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.06) 36%, rgba(255,255,255,.06) 64%, rgba(255,255,255,.78));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+/* 顶部柔光：一层很淡的弧形高光 */
+.app-icon.is-liquid::after{
+  content:""; position:absolute; left:0; right:0; top:0; height:55%; z-index:1;
+  background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0)); pointer-events:none;
+}
+
+.app-icon.is-liquid .lq-glyph{ position:relative; z-index:3; width:100%; height:100%; display:grid; place-items:center; }
+
+.app-icon.is-liquid .lq-glyph svg{
+  width:54%; height:54%; display:block; overflow:visible; stroke:none;
+  filter:drop-shadow(0 0 .6px rgba(255,255,255,.65)) drop-shadow(0 1.6px 2.2px rgba(0,0,0,.30));
+}
+
+.app-icon.is-liquid.has-custom-image img{ position:relative; z-index:0; border-radius:inherit; }
+
+.app:active .app-icon.is-liquid,
+.dock .app:active .app-icon.is-liquid{ background:var(--lq-bg); color:#fff; filter:brightness(.88); }
+
+/* 形状选项同样作用于液态玻璃（方形 = iOS 连续圆角） */
+.home[data-icon-shape] .app-icon.is-liquid,
+.home[data-icon-shape] .dock .app-icon.is-liquid{ border-radius:22.5%; }
+.home[data-icon-shape="soft"] .app-icon.is-liquid,
+.home[data-icon-shape="soft"] .dock .app-icon.is-liquid{ border-radius:30%; }
+.home[data-icon-shape="round"] .app-icon.is-liquid,
+.home[data-icon-shape="round"] .dock .app-icon.is-liquid{ border-radius:50%; }
+.home[data-icon-shape="pill"] .app-icon.is-liquid,
+.home[data-icon-shape="pill"] .dock .app-icon.is-liquid{ border-radius:18%; }

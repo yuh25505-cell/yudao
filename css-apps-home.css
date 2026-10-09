@@ -4,8 +4,8 @@
 
 .home{
   position:relative; z-index:1; display:flex; flex-direction:column; width:100%;
-  max-width:520px; height:100vh; height:100dvh; margin:0 auto; color:#f7f7f7;
-  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  max-width:520px; height:calc(100vh / var(--island-scale,1)); height:calc(100dvh / var(--island-scale,1)); margin:0 auto; color:#f7f7f7;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:calc(env(safe-area-inset-bottom,0px) + var(--island-bottom-lift,10px));
 }
 
 .home-body{
@@ -374,17 +374,16 @@ html.lq-lens .home .dock::before{
 .icon-adj-group-body[hidden]{ display:none; }
 
 
-/* ===== 屏幕比例：100% = 58px，主屏幕与 Dock 的图标同步缩放 ===== */
+/* ===== 图标大小固定 58px；整体缩放由「屏幕比例」做（见 css-core-base.css 的 data-scaled）===== */
 .home .app-icon,
-.home .dock .app-icon{ width:calc(58px * var(--icon-scale,1)); max-width:100%; }
-.app-icon.icon-library-preview{ width:58px; }
+.home .dock .app-icon{ width:58px; max-width:100%; }
 
 /* ===== 图标名称：自定义字号 / 颜色。默认白色，配一圈柔边，白色或浅色壁纸上也看得清 ===== */
 .home .app-name{
   font-size:calc(var(--label-size,11px) * var(--island-font-size-scale));
   font-weight:var(--island-fw-600,600);
   color:var(--label-color,#fff);
-  text-shadow:var(--label-shadow, 0 0 2px rgba(0,0,0,.60), 0 1px 3px rgba(0,0,0,.45), 0 0 8px rgba(0,0,0,.28));
+  text-shadow:var(--label-shadow, 0 0 1px rgba(0,0,0,.34), 0 1px 3px rgba(0,0,0,.20));
 }
 
 /* ===== 无 Dock 栏背景：只留图标 ===== */

@@ -28,7 +28,7 @@ var ICON_THEME_KEYS = {
 };
 
 var DEFAULT_HOME_APPEARANCE = {
-  iconTheme: 'glass', iconRadius: 26, iconBlur: 0, iconClarity: 100, iconLens: 100, iconDepth: 100, iconLensLocked: false, iconDepthLocked: false, glyphBlur: 0, glyphClarity: 79, glyphBlurLocked: false, glyphClarityLocked: false, iconRadiusLocked: false, iconBlurLocked: false, iconClarityLocked: false, iconScale: 100, labelSize: 11, labelColor: '#ffffff', dockNoBackground: false, iconLabels: true, iconBorder: 'transparent', dimDarkWallpaper: true,
+  iconTheme: 'glass', iconRadius: 26, iconBlur: 0, iconClarity: 100, iconLens: 100, iconDepth: 100, iconLensLocked: false, iconDepthLocked: false, glyphBlur: 0, glyphClarity: 79, glyphBlurLocked: false, glyphClarityLocked: false, iconRadiusLocked: false, iconBlurLocked: false, iconClarityLocked: false, islandScale: 100, labelSize: 11, labelColor: '#ffffff', dockNoBackground: false, iconLabels: true, iconBorder: 'transparent', dimDarkWallpaper: true,
   iconData: {},
   dimDarkWallpaperAmount: 42, dimDarkIconAmount: 42, dimDarkWallpaperLocked: false, dimDarkIconLocked: false,
   dockRadius: 5, dockTransparency: 0, dockBlur: 16, dockRadiusLocked: false, dockTransparencyLocked: false, dockBlurLocked: false,
@@ -302,9 +302,8 @@ function normalizeHomeAppearance(){
   base.glyphClarityLocked = incoming.glyphClarityLocked === true;
   base.dockBlur = sliderNum(incoming.dockBlur, 0, 60, base.dockBlur);
   base.dockBlurLocked = incoming.dockBlurLocked === true;
-  /* 屏幕比例（%，100 = 默认大小）：旧版 小/中/大 自动换算 */
-  var legacyScale = { small: 83, medium: 100, large: 114 };
-  base.iconScale = sliderNum(incoming.iconScale, 50, 130, legacyScale[incoming.iconSize] !== undefined ? legacyScale[incoming.iconSize] : base.iconScale);
+  /* 屏幕比例（%）：整个岛屿的全局缩放，100 = 原始大小 */
+  base.islandScale = sliderNum(incoming.islandScale, 70, 130, base.islandScale);
   base.labelSize = sliderNum(incoming.labelSize, 8, 18, base.labelSize);
   base.labelColor = (typeof incoming.labelColor === 'string' && /^#[0-9a-fA-F]{6}$/.test(incoming.labelColor)) ? incoming.labelColor.toLowerCase() : base.labelColor;
   base.dockNoBackground = incoming.dockNoBackground === true;

@@ -184,7 +184,7 @@ textarea.api-input{ resize:none; min-height:84px; padding:12px 14px; font-family
 /* 模型选择弹层 */
 .model-sheet{
   position:fixed; left:50%; bottom:0; z-index:81;
-  width:100%; max-width:520px; max-height:76vh;
+  width:100%; max-width:520px; max-height:calc(76vh / var(--island-scale,1));
   display:none; flex-direction:column;
   transform: translateX(-50%);
   border-radius: 28px 28px 0 0;

@@ -335,8 +335,8 @@ function bindSettingsAppearanceEvents(){
   bindHomeSliders();
   /* 数值框：改完（失焦 / 回车）再生效，避免输入到一半就被改写 */
   var commitOnEnter = function(el){ el.addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); el.blur(); } }); };
-  var iconScaleInput = $('iconScaleInput');
-  if (iconScaleInput) { iconScaleInput.addEventListener('change', function(){ setIconScale(iconScaleInput.value); }); commitOnEnter(iconScaleInput); }
+  var islandScaleInput = $('islandScaleInput');
+  if (islandScaleInput) { islandScaleInput.addEventListener('change', function(){ setIslandScale(islandScaleInput.value); }); commitOnEnter(islandScaleInput); }
   var labelSizeInput = $('labelSizeInput');
   if (labelSizeInput) { labelSizeInput.addEventListener('change', function(){ setLabelSize(labelSizeInput.value); }); commitOnEnter(labelSizeInput); }
   var labelColorPicker = $('labelColorPicker');

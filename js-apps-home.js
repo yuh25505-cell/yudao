@@ -216,9 +216,9 @@ function applyHomeAppearance(){
   var a = normalizeHomeAppearance();
   var home = $('home');
   var wallpaper = document.querySelector('.wallpaper');
+  applyIslandScale(a);
   if (home) {
     home.setAttribute('data-icon-theme', a.iconTheme);
-    home.style.setProperty('--icon-scale', String(a.iconScale / 100));
     home.setAttribute('data-dock-bg', a.dockNoBackground ? 'off' : 'on');
     applyIconLabelStyle(a);
     home.setAttribute('data-icon-labels', a.iconLabels ? 'on' : 'off');
@@ -267,7 +267,7 @@ function renderHomeAppearanceOptions(){
   $$('[data-icon-group]').forEach(function(g){ g.hidden = g.getAttribute('data-icon-group') !== a.iconTheme; });
   var dimWallpaper = $('dimDarkWallpaperToggle');
   if (dimWallpaper) { dimWallpaper.classList.toggle('is-on', a.dimDarkWallpaper); dimWallpaper.setAttribute('aria-checked', a.dimDarkWallpaper ? 'true' : 'false'); }
-  var scaleIn = $('iconScaleInput'); if (scaleIn && document.activeElement !== scaleIn) scaleIn.value = String(a.iconScale);
+  var scaleIn = $('islandScaleInput'); if (scaleIn && document.activeElement !== scaleIn) scaleIn.value = String(a.islandScale);
   var lsIn = $('labelSizeInput'); if (lsIn && document.activeElement !== lsIn) lsIn.value = String(a.labelSize);
   var lcPick = $('labelColorPicker'); if (lcPick) lcPick.value = a.labelColor;
   var lcIn = $('labelColorInput'); if (lcIn && document.activeElement !== lcIn) lcIn.value = a.labelColor.toUpperCase();
@@ -619,8 +619,22 @@ function labelShadowFor(hex){
   var lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   /* 浅色字配深色柔边，深色字配浅色柔边：在任何壁纸（尤其白色/浅色）上都能看清 */
   return lum >= 0.55
-    ? '0 0 2px rgba(0,0,0,.60), 0 1px 3px rgba(0,0,0,.45), 0 0 8px rgba(0,0,0,.28)'
-    : '0 0 2px rgba(255,255,255,.75), 0 0 6px rgba(255,255,255,.50)';
+    ? '0 0 1px rgba(0,0,0,.34), 0 1px 3px rgba(0,0,0,.20)'
+    : '0 0 1px rgba(255,255,255,.55), 0 1px 3px rgba(255,255,255,.30)';
+}
+
+/* 全局屏幕比例：给 <html> 写比例变量；≠100% 时 body 整体缩放并按 1/比例 放大尺寸，刚好铺满屏幕 */
+function getIslandScale(){
+  var v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--island-scale'));
+  return Number.isFinite(v) && v > 0 ? v : 1;
+}
+
+function applyIslandScale(a){
+  var root = document.documentElement;
+  var z = Math.max(0.7, Math.min(1.3, (Number(a.islandScale) || 100) / 100));
+  root.style.setProperty('--island-scale', String(z));
+  if (Math.abs(z - 1) < 0.001) root.removeAttribute('data-scaled');
+  else root.setAttribute('data-scaled', '1');
 }
 
 function applyIconLabelStyle(a){
@@ -630,11 +644,11 @@ function applyIconLabelStyle(a){
   home.style.setProperty('--label-shadow', labelShadowFor(a.labelColor));
 }
 
-function setIconScale(v){
+function setIslandScale(v){
   var a = normalizeHomeAppearance();
   var n = Number(v);
   if (!Number.isFinite(n)) { renderHomeAppearanceOptions(); return; }
-  a.iconScale = Math.max(50, Math.min(130, Math.round(n)));
+  a.islandScale = Math.max(70, Math.min(130, Math.round(n)));
   applyHomeAppearance(); saveSettings();
 }
 

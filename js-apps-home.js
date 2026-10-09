@@ -74,7 +74,7 @@ function ensureLiquidDefs(){
   holder.id = 'lqDefs';
   holder.setAttribute('aria-hidden', 'true');
   holder.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none';
-  holder.innerHTML = '<svg width="0" height="0" focusable="false"><defs><linearGradient id="lqGlyphGrad" gradientUnits="userSpaceOnUse" x1="0" y1="2" x2="0" y2="22"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#f6f7fb"/><stop offset="1" stop-color="#dde1ea"/></linearGradient></defs></svg>';
+  holder.innerHTML = '<svg width="0" height="0" focusable="false"><defs><linearGradient id="lqGlyphGrad" gradientUnits="userSpaceOnUse" x1="0" y1="2" x2="0" y2="22"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#f3f6fb"/><stop offset="1" stop-color="#cdd5e2"/></linearGradient><linearGradient id="lqGlyphEdge" gradientUnits="userSpaceOnUse" x1="3" y1="3" x2="21" y2="21"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#ffffff" stop-opacity=".25"/><stop offset=".6" stop-color="#ffffff" stop-opacity=".25"/><stop offset="1" stop-color="#ffffff" stop-opacity=".9"/></linearGradient></defs></svg>';
   document.body.appendChild(holder);
 }
 
@@ -227,6 +227,7 @@ function applyHomeAppearance(){
   }
   applyHomeGlassVars(a);
   renderHomeAppIcons();
+  scheduleLensUpdate();
   renderCalendarPhoto();
   renderMusicCover();
   renderPolaroidPhoto();
@@ -317,7 +318,7 @@ function setDockSetting(kind, value){
   if (!a) return;
   var n = Number(value);
   if (!Number.isFinite(n)) return;
-  if (kind === 'radius') { if (a.dockRadiusLocked) return; a.dockRadius = Math.max(0, Math.min(40, Math.round(n))); }
+  if (kind === 'radius') { if (a.dockRadiusLocked) return; a.dockRadius = Math.max(0, Math.min(40, Math.round(n))); scheduleLensUpdate(); }
   if (kind === 'transparency') { if (a.dockTransparencyLocked) return; a.dockTransparency = Math.max(0, Math.min(100, Math.round(n))); }
   var dock = document.querySelector('.dock');
   var range = kind === 'radius' ? $('dockRadiusRange') : $('dockTransparencyRange');
@@ -350,6 +351,8 @@ var HOME_SLIDERS = {
   iconRadius:  { lockKey: 'iconRadiusLocked',  min: 0, max: 50,  unit: '%' },
   iconBlur:    { lockKey: 'iconBlurLocked',    min: 0, max: 30,  unit: 'px' },
   iconClarity: { lockKey: 'iconClarityLocked', min: 0, max: 100, unit: '%' },
+  iconLens:    { lockKey: 'iconLensLocked',    min: 0, max: 100, unit: '%' },
+  iconDepth:   { lockKey: 'iconDepthLocked',   min: 0, max: 100, unit: '%' },
   glyphBlur:   { lockKey: 'glyphBlurLocked',   min: 0, max: 20,  unit: 'px' },
   glyphClarity:{ lockKey: 'glyphClarityLocked',min: 0, max: 100, unit: '%' },
   dockBlur:    { lockKey: 'dockBlurLocked',    min: 0, max: 60,  unit: 'px' }
@@ -366,7 +369,127 @@ function applyHomeGlassVars(a){
   /* 符号清晰度 0→100：符号本体填充 .12→.92，越高越实、越清楚；越低越像透明玻璃 */
   st.setProperty('--lq-gfill', String(.12 + .8 * a.glyphClarity / 100));
   st.setProperty('--lq-gedge', String(.30 + .45 * a.glyphClarity / 100));
+  st.setProperty('--lq-depth', String(a.iconDepth / 60));
   st.setProperty('--dock-blur', a.dockBlur + 'px');
+  scheduleLensUpdate();
+}
+
+/* ---------- 边缘折射（真·液态玻璃的“厚度”）----------
+ * 用位移贴图让玻璃边缘附近的壁纸发生弯曲，中间保持清晰，就像一块有厚度的透镜。
+ * 位移贴图由 canvas 按「圆角矩形距离场」实时生成；只有基于 Chromium 的内核
+ * （Chrome / 安卓 WebView / APK）支持在 backdrop-filter 里使用 SVG 滤镜，
+ * iOS Safari 等会自动退回为“模糊 + 高光”的版本。 */
+var LENS_SUPPORTED = (function(){
+  try {
+    var ua = navigator.userAgent || '';
+    return /Chrome\//.test(ua) && !/(CriOS|FxiOS|EdgiOS|iPhone|iPad|iPod)/.test(ua);
+  } catch (e) { return false; }
+})();
+
+/* w,h：目标尺寸(px)；rPx：圆角(px)；band：折射带宽(px)；P：边缘最大位移(px) */
+function buildLensMap(w, h, rPx, band, P){
+  var scaleDown = Math.max(1, Math.max(w, h) / 160);
+  var cw = Math.max(8, Math.round(w / scaleDown)), ch = Math.max(8, Math.round(h / scaleDown));
+  var k = cw / w;
+  var cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+  var ctx = cv.getContext('2d'); if (!ctx) return null;
+  var img = ctx.createImageData(cw, ch), d = img.data;
+  var r = Math.min(rPx * k, cw / 2, ch / 2), bw = Math.max(1, band * k);
+  var hx = cw / 2, hy = ch / 2;
+  /* feDisplacementMap 的 scale 以 bbox 为单位：x 方向 = scale*W*(R-.5)，y 方向 = scale*H*(G-.5) */
+  var S = 2 * P / Math.min(w, h);
+  for (var y = 0; y < ch; y++) {
+    for (var x = 0; x < cw; x++) {
+      var px = x + .5 - hx, py = y + .5 - hy;
+      var qx = Math.abs(px) - (hx - r), qy = Math.abs(py) - (hy - r);
+      var ox, oy, dist;
+      if (qx > 0 && qy > 0) { var l = Math.sqrt(qx*qx + qy*qy) || 1; ox = qx / l * (px < 0 ? -1 : 1); oy = qy / l * (py < 0 ? -1 : 1); dist = r - l; }
+      else if (qx > qy) { ox = px < 0 ? -1 : 1; oy = 0; dist = -qx; }
+      else { ox = 0; oy = py < 0 ? -1 : 1; dist = -qy; }
+      var t = Math.max(0, Math.min(1, 1 - dist / bw));      /* 1=最边缘 → 0=带宽之外 */
+      var m = t * t * (3 - 2 * t); m = m * m;               /* 边缘陡、向内迅速消失 */
+      /* 向内取样：边缘像素显示更靠内侧的壁纸，边缘看起来被“压扁/拉弯”，且不会取到元素外的透明像素 */
+      var vx = -ox * m * (P / w) / (S / 2) * .5, vy = -oy * m * (P / h) / (S / 2) * .5;
+      var i = (y * cw + x) * 4;
+      d[i] = Math.round(127.5 + 127 * vx); d[i+1] = Math.round(127.5 + 127 * vy); d[i+2] = 128; d[i+3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  return { url: cv.toDataURL('image/png'), scale: S };
+}
+
+function ensureLensFilters(){
+  if (document.getElementById('lqLensIcon')) return;
+  ensureLiquidDefs();
+  var svg = document.querySelector('#lqDefs svg'); if (!svg) return;
+  var NS = 'http://www.w3.org/2000/svg';
+  var mk = function(id){
+    var f = document.createElementNS(NS, 'filter');
+    f.setAttribute('id', id); f.setAttribute('x', '0'); f.setAttribute('y', '0'); f.setAttribute('width', '1'); f.setAttribute('height', '1');
+    f.setAttribute('primitiveUnits', 'objectBoundingBox'); f.setAttribute('color-interpolation-filters', 'sRGB');
+    var im = document.createElementNS(NS, 'feImage');
+    im.setAttribute('id', id + 'Map'); im.setAttribute('x', '0'); im.setAttribute('y', '0'); im.setAttribute('width', '1'); im.setAttribute('height', '1');
+    im.setAttribute('preserveAspectRatio', 'none'); im.setAttribute('result', 'lqmap');
+    var dm = document.createElementNS(NS, 'feDisplacementMap');
+    dm.setAttribute('id', id + 'Disp'); dm.setAttribute('in', 'SourceGraphic'); dm.setAttribute('in2', 'lqmap');
+    dm.setAttribute('xChannelSelector', 'R'); dm.setAttribute('yChannelSelector', 'G'); dm.setAttribute('scale', '0');
+    f.appendChild(im); f.appendChild(dm); svg.querySelector('defs').appendChild(f);
+  };
+  mk('lqLensIcon'); mk('lqLensDock');
+}
+
+var _lensRaf = 0;
+function scheduleLensUpdate(){
+  if (_lensRaf) return;
+  _lensRaf = requestAnimationFrame(function(){
+    _lensRaf = 0;
+    var a = State.settings && State.settings.homeAppearance;
+    if (a) updateLensFilters(a);
+  });
+}
+window.addEventListener('resize', function(){ scheduleLensUpdate(); });
+
+function updateLensFilters(a){
+  var root = document.documentElement;
+  var on = LENS_SUPPORTED && a.iconLens > 0 && getHomeIconTheme() === 'glass';
+  root.classList.toggle('lq-lens', on);
+  if (!on) return;
+  ensureLensFilters();
+  var setMap = function(id, w, h, rPx, band, P){
+    var m = buildLensMap(w, h, rPx, band, P); if (!m) return;
+    var im = document.getElementById(id + 'Map'), dm = document.getElementById(id + 'Disp');
+    if (!im || !dm) return;
+    im.setAttribute('href', m.url); im.setAttributeNS('http://www.w3.org/1999/xlink', 'href', m.url);
+    dm.setAttribute('scale', String(m.scale));
+  };
+  var ic = document.querySelector('.app-icon.is-liquid');
+  var iw = ic && ic.offsetWidth ? ic.offsetWidth : 58;
+  var ih = ic && ic.offsetHeight ? ic.offsetHeight : iw;
+  var f = a.iconLens / 100;
+  var key = [iw, ih, a.iconRadius, a.iconLens].join('|');
+  setMap('lqLensIcon', iw, ih, iw * a.iconRadius / 100, iw * .34, iw * .30 * f);
+  var dk = document.querySelector('.dock');
+  if (dk && dk.offsetWidth > 20) {
+    var dw = dk.offsetWidth, dh = dk.offsetHeight;
+    setMap('lqLensDock', dw, dh, a.dockRadius, dh * .30, dh * .22 * f);
+  }
+}
+
+/* 一键「iOS 立体液态玻璃」：把玻璃相关参数一次调到接近 iOS 26 的观感。
+ * 已锁定的拉条保持原值不动；调完仍可继续微调。 */
+var IOS_GLASS_PRESET = { iconRadius: 26, iconBlur: 3, iconClarity: 70, iconLens: 65, iconDepth: 70, glyphBlur: 3, glyphClarity: 85, dockBlur: 12 };
+
+function applyIosGlassPreset(){
+  var a = normalizeHomeAppearance();
+  a.iconTheme = 'glass';
+  Object.keys(IOS_GLASS_PRESET).forEach(function(k){
+    var d = HOME_SLIDERS[k];
+    if (d && a[d.lockKey] !== true) a[k] = IOS_GLASS_PRESET[k];
+  });
+  if (a.dockRadiusLocked !== true) a.dockRadius = 30;
+  applyHomeAppearance();
+  renderHomeAppearanceOptions();
+  saveSettings();
 }
 
 function paintHomeSlider(name, a){
@@ -412,6 +535,8 @@ function setHomeSliderLock(name, on){
 }
 
 function bindHomeSliders(){
+  var preset = $('iosGlassPresetBtn');
+  if (preset) preset.addEventListener('click', applyIosGlassPreset);
   Object.keys(HOME_SLIDERS).forEach(function(name){
     var range = $(name + 'Range');
     if (range) {

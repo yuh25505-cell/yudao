@@ -262,93 +262,66 @@ html[data-theme="dark"] .home[data-dim-dark-wallpaper="off"] .app-icon.has-custo
 }
 
 /* ===== 液态玻璃图标（iOS Liquid Glass）=====
- * 选择器直接挂在 .app-icon.is-liquid 上，所以桌面、Dock 与设置里的图标预览都一致。
- * 底板本身几乎透明（只做轻微折射与极淡的烟色，避免发灰），质感主要来自边缘高光与内发光。 */
+ * 立体感来自四层叠加（自下而上）：
+ *   1. .lq-glass   壁纸模糊 +（Chromium 内核）边缘折射位移，玻璃自身有“厚度”
+ *   2. 底板淡淡的受光渐变
+ *   3. ::after     厚边内侧高光 / 暗边 / 左上镜面反光（放在玻璃层之上，不会被一起折射掉）
+ *   4. 符号        带投影与边缘光的磨砂玻璃浮雕
+ * --lq-depth（设置里的「立体厚度」）统一缩放高光、暗边与投影的强度。 */
 .app-icon.is-liquid{
   --lq-bg:
-    radial-gradient(120% 90% at 16% -8%, rgba(255,255,255,calc(.40 * var(--lq-fill,1))), rgba(255,255,255,0) 56%),
-    radial-gradient(90% 70% at 90% 112%, rgba(255,255,255,calc(.22 * var(--lq-fill,1))), rgba(255,255,255,0) 60%),
-    linear-gradient(160deg, rgba(24,28,38,calc(.13 * var(--lq-fill,1))), rgba(24,28,38,calc(.04 * var(--lq-fill,1))));
+    linear-gradient(165deg, rgba(255,255,255,calc(.20 * var(--lq-fill,1))), rgba(255,255,255,calc(.04 * var(--lq-fill,1))) 46%, rgba(20,24,34,calc(.10 * var(--lq-fill,1))));
   position:relative; isolation:isolate; overflow:hidden; border:none; color:#fff;
   border-radius:22.5%;
   background:var(--lq-bg);
   -webkit-backdrop-filter:none; backdrop-filter:none;
   box-shadow:
-    inset 0 .6px .4px rgba(255,255,255,.30),
-    inset 0 -.6px .4px rgba(255,255,255,.14),
-    inset .6px 0 .4px rgba(255,255,255,.09),
-    inset -.6px 0 .4px rgba(255,255,255,.09),
-    inset 0 0 10px rgba(255,255,255,.08),
-    0 8px 18px rgba(0,0,0,.16),
-    0 1px 2px rgba(0,0,0,.12);
+    0 calc(10px * var(--lq-depth,1)) calc(14px * var(--lq-depth,1)) calc(-6px * var(--lq-depth,1)) rgba(0,0,0,calc(.34 * var(--lq-depth,1))),
+    0 calc(2px * var(--lq-depth,1)) calc(5px * var(--lq-depth,1)) rgba(0,0,0,calc(.16 * var(--lq-depth,1)));
 }
 
 html[data-theme="dark"] .app-icon.is-liquid{
   --lq-bg:
-    radial-gradient(120% 90% at 16% -8%, rgba(255,255,255,calc(.34 * var(--lq-fill,1))), rgba(255,255,255,0) 56%),
-    radial-gradient(90% 70% at 90% 112%, rgba(255,255,255,calc(.16 * var(--lq-fill,1))), rgba(255,255,255,0) 60%),
-    linear-gradient(160deg, rgba(255,255,255,calc(.13 * var(--lq-fill,1))), rgba(255,255,255,calc(.03 * var(--lq-fill,1))));
+    linear-gradient(165deg, rgba(255,255,255,calc(.18 * var(--lq-fill,1))), rgba(255,255,255,calc(.03 * var(--lq-fill,1))) 46%, rgba(255,255,255,calc(.06 * var(--lq-fill,1))));
   box-shadow:
-    inset 0 .6px .4px rgba(255,255,255,.28),
-    inset 0 -.6px .4px rgba(255,255,255,.11),
-    inset .6px 0 .4px rgba(255,255,255,.07),
-    inset -.6px 0 .4px rgba(255,255,255,.07),
-    inset 0 0 10px rgba(255,255,255,.06),
-    0 8px 20px rgba(0,0,0,.40),
-    0 1px 2px rgba(0,0,0,.30);
-}
-
-/* Dock：与图标主题无关，始终是 iOS 液态玻璃。
- * 嵌套的 backdrop-filter 只能“看到”父级自身，会让里面的图标发白，所以 Dock 自己不用 backdrop-filter，
- * 由 ::before 负责模糊（模糊度 = --dock-blur，设置里可调），::after 画极细的边缘高光。
- * 图标因此和桌面上的一样直接折射壁纸；“Dock 透明度 / 圆角”滑块照常生效。 */
-.home .dock{
-  position:relative; isolation:isolate; border:none;
-  -webkit-backdrop-filter:none; backdrop-filter:none;
-  background:rgba(255,255,255,calc(var(--dock-effective-alpha, .075) * .32));
-  box-shadow:
-    inset 0 .6px .4px rgba(255,255,255,.26),
-    inset 0 -.6px .4px rgba(255,255,255,.10),
-    inset 0 0 12px rgba(255,255,255,.10),
-    0 12px 30px rgba(0,0,0,.20);
-}
-
-.home .dock::before{
-  content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit; pointer-events:none;
-  -webkit-backdrop-filter:blur(var(--dock-blur,16px)) saturate(1.6); backdrop-filter:blur(var(--dock-blur,16px)) saturate(1.6);
-}
-
-.home .dock::after{
-  content:""; position:absolute; inset:0; z-index:0; border-radius:inherit; padding:var(--lq-rim,.6px); pointer-events:none;
-  background:linear-gradient(135deg, rgba(255,255,255,.42), rgba(255,255,255,.03) 38%, rgba(255,255,255,.03) 62%, rgba(255,255,255,.32));
-  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite:xor;
-  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-}
-
-/* 边缘折射高光：左上与右下最亮、两侧渐隐，模拟玻璃边缘受光 */
-.app-icon.is-liquid::before{
-  content:""; position:absolute; inset:0; z-index:2; border-radius:inherit; padding:var(--lq-rim,.6px); pointer-events:none;
-  background:linear-gradient(135deg, rgba(255,255,255,.46), rgba(255,255,255,.03) 38%, rgba(255,255,255,.03) 62%, rgba(255,255,255,.34));
-  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite:xor;
-  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-}
-
-/* 顶部柔光：一层很淡的弧形高光 */
-.app-icon.is-liquid::after{
-  content:""; position:absolute; left:0; right:0; top:0; height:55%; z-index:1;
-  background:linear-gradient(180deg, rgba(255,255,255,calc(.16 * var(--lq-fill,1))), rgba(255,255,255,0)); pointer-events:none;
+    0 calc(10px * var(--lq-depth,1)) calc(16px * var(--lq-depth,1)) calc(-6px * var(--lq-depth,1)) rgba(0,0,0,calc(.55 * var(--lq-depth,1))),
+    0 calc(2px * var(--lq-depth,1)) calc(5px * var(--lq-depth,1)) rgba(0,0,0,calc(.34 * var(--lq-depth,1)));
 }
 
 .app-icon.is-liquid .lq-glass{
   position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none;
   -webkit-backdrop-filter:blur(var(--lq-blur,10px)) saturate(1.9); backdrop-filter:blur(var(--lq-blur,10px)) saturate(1.9);
 }
+/* 边缘折射：先位移（折射）再模糊，保证折射的弯曲细节还在 */
+html.lq-lens .app-icon.is-liquid .lq-glass{
+  -webkit-backdrop-filter:url(#lqLensIcon) blur(var(--lq-blur,10px)) saturate(1.9); backdrop-filter:url(#lqLensIcon) blur(var(--lq-blur,10px)) saturate(1.9);
+}
 
-/* 符号 = 一片小的液态玻璃：.lq-gblur 用符号轮廓遮罩出一块模糊的壁纸（模糊度可调），
- * 上面的 svg 画半透明本体（清晰度可调）和极细的边缘光。 */
-.app-icon.is-liquid .lq-glyph{ position:relative; z-index:3; width:100%; height:100%; display:grid; place-items:center; }
+/* 厚边与镜面高光（在玻璃层之上） */
+.app-icon.is-liquid::after{
+  content:""; position:absolute; inset:0; z-index:2; border-radius:inherit; pointer-events:none;
+  background:
+    radial-gradient(70% 42% at 26% 4%, rgba(255,255,255,calc(.50 * var(--lq-depth,1))), rgba(255,255,255,0) 72%),
+    radial-gradient(48% 30% at 82% 98%, rgba(255,255,255,calc(.30 * var(--lq-depth,1))), rgba(255,255,255,0) 72%);
+  box-shadow:
+    inset 0 0 0 .5px rgba(255,255,255,calc(.42 * var(--lq-depth,1))),
+    inset 1.5px 2px 2.5px -1px rgba(255,255,255,calc(.80 * var(--lq-depth,1))),
+    inset -1.5px -2px 2.5px -1px rgba(255,255,255,calc(.50 * var(--lq-depth,1))),
+    inset 0 0 6px 1px rgba(255,255,255,calc(.20 * var(--lq-depth,1))),
+    inset -2px -4px 7px -3px rgba(0,0,0,calc(.16 * var(--lq-depth,1)));
+}
+
+/* 极细的渐变边线：左上、右下亮，两侧近乎透明 */
+.app-icon.is-liquid::before{
+  content:""; position:absolute; inset:0; z-index:3; border-radius:inherit; padding:var(--lq-rim,.6px); pointer-events:none;
+  background:linear-gradient(135deg, rgba(255,255,255,calc(.62 * var(--lq-depth,1))), rgba(255,255,255,.04) 38%, rgba(255,255,255,.04) 62%, rgba(255,255,255,calc(.46 * var(--lq-depth,1))));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+/* 符号 = 玻璃浮雕：.lq-gblur 用符号轮廓遮出一块模糊壁纸，svg 画半透明本体、边缘光和投影 */
+.app-icon.is-liquid .lq-glyph{ position:relative; z-index:4; width:100%; height:100%; display:grid; place-items:center; }
 
 .app-icon.is-liquid .lq-gblur{
   position:absolute; left:23%; top:23%; width:54%; height:54%; pointer-events:none;
@@ -360,8 +333,40 @@ html[data-theme="dark"] .app-icon.is-liquid{
 .app-icon.is-liquid .lq-glyph svg{
   position:relative; width:54%; height:54%; display:block; overflow:visible;
   fill-opacity:var(--lq-gfill,.6);
-  stroke:rgba(255,255,255,.9); stroke-opacity:var(--lq-gedge,.5); stroke-width:.35; stroke-linejoin:round; paint-order:stroke;
-  filter:drop-shadow(0 1px 1.6px rgba(0,0,0,.20));
+  stroke:url(#lqGlyphEdge); stroke-opacity:var(--lq-gedge,.5); stroke-width:.45; stroke-linejoin:round;
+  filter:
+    drop-shadow(0 calc(1px * var(--lq-depth,1)) calc(1px * var(--lq-depth,1)) rgba(0,0,0,calc(.30 * var(--lq-depth,1))))
+    drop-shadow(0 calc(3.5px * var(--lq-depth,1)) calc(5px * var(--lq-depth,1)) rgba(0,0,0,calc(.20 * var(--lq-depth,1))));
+}
+
+/* Dock：同样是厚玻璃。自己不用 backdrop-filter（避免嵌套导致里面的图标发白），
+ * 由 ::before 做模糊 +（Chromium）边缘折射，::after 画厚边高光。 */
+.home .dock{
+  position:relative; isolation:isolate; border:none;
+  -webkit-backdrop-filter:none; backdrop-filter:none;
+  background:linear-gradient(180deg, rgba(255,255,255,calc(var(--dock-effective-alpha, .075) * .42)), rgba(255,255,255,calc(var(--dock-effective-alpha, .075) * .22)));
+  box-shadow:
+    0 calc(16px * var(--lq-depth,1)) calc(26px * var(--lq-depth,1)) calc(-8px * var(--lq-depth,1)) rgba(0,0,0,calc(.34 * var(--lq-depth,1))),
+    0 calc(3px * var(--lq-depth,1)) calc(8px * var(--lq-depth,1)) rgba(0,0,0,calc(.14 * var(--lq-depth,1)));
+}
+
+.home .dock::before{
+  content:""; position:absolute; inset:0; z-index:-1; border-radius:inherit; pointer-events:none;
+  -webkit-backdrop-filter:blur(var(--dock-blur,16px)) saturate(1.6); backdrop-filter:blur(var(--dock-blur,16px)) saturate(1.6);
+}
+html.lq-lens .home .dock::before{
+  -webkit-backdrop-filter:url(#lqLensDock) blur(var(--dock-blur,16px)) saturate(1.6); backdrop-filter:url(#lqLensDock) blur(var(--dock-blur,16px)) saturate(1.6);
+}
+
+.home .dock::after{
+  content:""; position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none;
+  background:radial-gradient(60% 55% at 22% 0%, rgba(255,255,255,calc(.30 * var(--lq-depth,1))), rgba(255,255,255,0) 70%);
+  box-shadow:
+    inset 0 0 0 .5px rgba(255,255,255,calc(.40 * var(--lq-depth,1))),
+    inset 1.5px 2px 3px -1px rgba(255,255,255,calc(.70 * var(--lq-depth,1))),
+    inset -1.5px -2px 3px -1px rgba(255,255,255,calc(.42 * var(--lq-depth,1))),
+    inset 0 0 8px 1px rgba(255,255,255,calc(.16 * var(--lq-depth,1))),
+    inset -2px -5px 9px -4px rgba(0,0,0,calc(.14 * var(--lq-depth,1)));
 }
 
 .app-icon.is-liquid.has-custom-image img{ position:relative; z-index:0; border-radius:inherit; }

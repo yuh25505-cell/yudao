@@ -14,7 +14,7 @@ var DEFAULT_STT = {
 var HOME_APP_NAMES = ['聊天','通讯录','相册','日历','备忘录','天气','时钟','设置','电话','浏览器','世界书','音乐'];
 
 var DEFAULT_HOME_APPEARANCE = {
-  iconTheme: 'mono', iconRadius: 9, iconBlur: 10, iconClarity: 50, iconLens: 60, iconDepth: 60, iconLensLocked: false, iconDepthLocked: false, glyphBlur: 8, glyphClarity: 60, glyphBlurLocked: false, glyphClarityLocked: false, iconRadiusLocked: false, iconBlurLocked: false, iconClarityLocked: false, iconSize: 'medium', iconLabels: true, iconBorder: 'transparent', dimDarkWallpaper: true,
+  iconTheme: 'mono', iconRadius: 9, iconBlur: 0, iconClarity: 100, iconLens: 100, iconDepth: 100, iconLensLocked: false, iconDepthLocked: false, glyphBlur: 0, glyphClarity: 79, glyphBlurLocked: false, glyphClarityLocked: false, iconRadiusLocked: false, iconBlurLocked: false, iconClarityLocked: false, iconSize: 'medium', iconLabels: true, iconBorder: 'transparent', dimDarkWallpaper: true,
   iconData: {},
   dimDarkWallpaperAmount: 42, dimDarkIconAmount: 42, dimDarkWallpaperLocked: false, dimDarkIconLocked: false,
   dockRadius: 5, dockTransparency: 0, dockBlur: 16, dockRadiusLocked: false, dockTransparencyLocked: false, dockBlurLocked: false,
@@ -263,7 +263,7 @@ function normalizeHomeAppearance(){
   /* 图标圆角（%）：旧版「图标形状」自动换算成对应圆角，升级后外观不变。 */
   var legacyRadius = { square: base.iconTheme === 'glass' ? 22 : 9, soft: 28, round: 50, pill: base.iconTheme === 'glass' ? 18 : 31 };
   var sliderNum = function(v, lo, hi, def){ return (v !== '' && v !== null && v !== undefined && Number.isFinite(Number(v))) ? Math.max(lo, Math.min(hi, Math.round(Number(v)))) : def; };
-  base.iconRadius = sliderNum(incoming.iconRadius, 0, 50, legacyRadius[incoming.iconShape] !== undefined ? legacyRadius[incoming.iconShape] : base.iconRadius);
+  base.iconRadius = sliderNum(incoming.iconRadius, 0, 50, legacyRadius[incoming.iconShape] !== undefined ? legacyRadius[incoming.iconShape] : (base.iconTheme === 'glass' ? 26 : 9));
   base.iconBlur = sliderNum(incoming.iconBlur, 0, 30, base.iconBlur);
   base.iconClarity = sliderNum(incoming.iconClarity, 0, 100, base.iconClarity);
   base.iconRadiusLocked = incoming.iconRadiusLocked === true;

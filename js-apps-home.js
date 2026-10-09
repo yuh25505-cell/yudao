@@ -475,23 +475,6 @@ function updateLensFilters(a){
   }
 }
 
-/* 一键「iOS 立体液态玻璃」：把玻璃相关参数一次调到接近 iOS 26 的观感。
- * 已锁定的拉条保持原值不动；调完仍可继续微调。 */
-var IOS_GLASS_PRESET = { iconRadius: 26, iconBlur: 3, iconClarity: 70, iconLens: 65, iconDepth: 70, glyphBlur: 3, glyphClarity: 85, dockBlur: 12 };
-
-function applyIosGlassPreset(){
-  var a = normalizeHomeAppearance();
-  a.iconTheme = 'glass';
-  Object.keys(IOS_GLASS_PRESET).forEach(function(k){
-    var d = HOME_SLIDERS[k];
-    if (d && a[d.lockKey] !== true) a[k] = IOS_GLASS_PRESET[k];
-  });
-  if (a.dockRadiusLocked !== true) a.dockRadius = 30;
-  applyHomeAppearance();
-  renderHomeAppearanceOptions();
-  saveSettings();
-}
-
 function paintHomeSlider(name, a){
   var d = HOME_SLIDERS[name];
   var range = $(name + 'Range'), valueEl = $(name + 'Value'), lock = $(name + 'Lock');
@@ -535,8 +518,6 @@ function setHomeSliderLock(name, on){
 }
 
 function bindHomeSliders(){
-  var preset = $('iosGlassPresetBtn');
-  if (preset) preset.addEventListener('click', applyIosGlassPreset);
   Object.keys(HOME_SLIDERS).forEach(function(name){
     var range = $(name + 'Range');
     if (range) {

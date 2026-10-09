@@ -80,13 +80,15 @@ function ensureLiquidDefs(){
 
 function getHomeIconTheme(){
   var t = State.settings && State.settings.homeAppearance && State.settings.homeAppearance.iconTheme;
-  return ['mono','glass','borderless'].indexOf(t) >= 0 ? t : 'mono';
+  return ['glass','borderless'].indexOf(t) >= 0 ? t : 'glass';
 }
 
 function setAppIconVisual(iconEl, appName, imageData){
   if (!iconEl) return;
   var liquid = getHomeIconTheme() === 'glass';
+  var flat = getHomeIconTheme() === 'borderless';
   iconEl.classList.toggle('has-custom-image', !!imageData);
+  iconEl.classList.toggle('is-flat', flat && !imageData);
   iconEl.classList.toggle('is-liquid', liquid);
   iconEl.innerHTML = '';
   if (imageData) {
@@ -110,6 +112,13 @@ function setAppIconVisual(iconEl, appName, imageData){
     holder.style.setProperty('--lq-mask', 'url("data:image/svg+xml,' + encodeURIComponent(maskSvg) + '")');
     holder.innerHTML = '<i class="lq-gblur"></i><svg viewBox="0 0 24 24" fill="url(#lqGlyphGrad)">' + LIQUID_GLYPHS[appName] + '</svg>';
     iconEl.appendChild(holder);
+  } else if (flat && LIQUID_GLYPHS[appName]) {
+    /* 无边框：只留一枚实心符号，没有底板、没有边线 */
+    var fh = document.createElement('span');
+    fh.className = 'flat-glyph';
+    fh.setAttribute('aria-hidden', 'true');
+    fh.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor">' + LIQUID_GLYPHS[appName] + '</svg>';
+    iconEl.appendChild(fh);
   } else {
     var glyph = document.createElement('span');
     glyph.className = 'app-glyph';
@@ -252,6 +261,8 @@ function renderHomeAppearanceOptions(){
     btn.setAttribute('aria-checked', on ? 'true' : 'false');
   });
   renderHomeSliders(a);
+  /* 主题专属的拉条分组：只显示当前主题对应的那一组（默认折叠，展开状态不写入存档） */
+  $$('[data-icon-group]').forEach(function(g){ g.hidden = g.getAttribute('data-icon-group') !== a.iconTheme; });
   var dimWallpaper = $('dimDarkWallpaperToggle');
   if (dimWallpaper) { dimWallpaper.classList.toggle('is-on', a.dimDarkWallpaper); dimWallpaper.setAttribute('aria-checked', a.dimDarkWallpaper ? 'true' : 'false'); }
   $$('[data-home-icon-size]').forEach(function(btn){
@@ -306,7 +317,11 @@ function renderHomeAppearanceOptions(){
 
 function setHomeIconOption(kind, value){
   var a = normalizeHomeAppearance();
-  if (kind === 'theme' && ['mono','glass','borderless'].indexOf(value) >= 0) { a.iconTheme = value; if (value === 'borderless') a.iconBorder = 'none'; }
+  if (kind === 'theme' && ['glass','borderless'].indexOf(value) >= 0) {
+    /* 切换主题：数值换成该主题自己的一组（applyHomeAppearance → normalize 会读 themeParams）。
+     * 与「锁定」无关——锁定只是防误触拉条，不会让数值卡在上一个主题。 */
+    a.iconTheme = value;
+  }
   if (kind === 'size' && ['small','medium','large'].indexOf(value) >= 0) a.iconSize = value;
   applyHomeAppearance();
   saveSettings();
@@ -503,6 +518,11 @@ function setHomeSlider(name, value){
   var n = Number(value);
   if (!Number.isFinite(n)) return;
   a[name] = Math.max(d.min, Math.min(d.max, Math.round(n)));
+  /* 同步写进当前主题自己的那一组，切换主题时才不会串值 */
+  if (!a.themeParams) a.themeParams = {};
+  var tk = a.iconTheme === 'borderless' ? 'borderless' : 'glass';
+  if (!a.themeParams[tk]) a.themeParams[tk] = {};
+  a.themeParams[tk][name] = a[name];
   paintHomeSlider(name, a);
   applyHomeGlassVars(a);
   scheduleSettingsSave(120);
@@ -517,7 +537,25 @@ function setHomeSliderLock(name, on){
   saveSettings();
 }
 
+function setIconGroupOpen(group, open){
+  if (!group) return;
+  var head = group.querySelector('.icon-adj-group-head');
+  var body = group.querySelector('.icon-adj-group-body');
+  group.classList.toggle('is-open', !!open);
+  if (head) head.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (body) body.hidden = !open;
+}
+
+function bindIconGroups(){
+  $$('[data-icon-group]').forEach(function(group){
+    var head = group.querySelector('.icon-adj-group-head');
+    if (head) head.addEventListener('click', function(){ setIconGroupOpen(group, !group.classList.contains('is-open')); });
+    setIconGroupOpen(group, false); /* 默认折叠 */
+  });
+}
+
 function bindHomeSliders(){
+  bindIconGroups();
   Object.keys(HOME_SLIDERS).forEach(function(name){
     var range = $(name + 'Range');
     if (range) {

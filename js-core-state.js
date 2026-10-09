@@ -13,8 +13,22 @@ var DEFAULT_STT = {
 
 var HOME_APP_NAMES = ['聊天','通讯录','相册','日历','备忘录','天气','时钟','设置','电话','浏览器','世界书','音乐'];
 
+/* 每个图标主题各自保存一组调节值：切换主题时，数值会换成该主题自己的那一组（与「锁定」无关）。
+ * 「锁定」只负责防止上下滑动时误触拉条，不参与主题切换。 */
+var ICON_THEMES = ['glass','borderless'];
+var ICON_SLIDER_RANGES = { iconRadius:[0,50], iconBlur:[0,30], iconClarity:[0,100], iconLens:[0,100], iconDepth:[0,100], glyphBlur:[0,20], glyphClarity:[0,100] };
+var ICON_THEME_DEFAULTS = {
+  glass:      { iconRadius: 26, iconBlur: 0, iconClarity: 100, iconLens: 100, iconDepth: 100, glyphBlur: 0, glyphClarity: 79 },
+  borderless: { iconRadius: 9 }
+};
+/* 该主题下哪些拉条是它「专属」的（其余主题里不显示，也不保存） */
+var ICON_THEME_KEYS = {
+  glass: ['iconRadius','iconBlur','iconClarity','iconLens','iconDepth','glyphBlur','glyphClarity'],
+  borderless: ['iconRadius']
+};
+
 var DEFAULT_HOME_APPEARANCE = {
-  iconTheme: 'mono', iconRadius: 9, iconBlur: 0, iconClarity: 100, iconLens: 100, iconDepth: 100, iconLensLocked: false, iconDepthLocked: false, glyphBlur: 0, glyphClarity: 79, glyphBlurLocked: false, glyphClarityLocked: false, iconRadiusLocked: false, iconBlurLocked: false, iconClarityLocked: false, iconSize: 'medium', iconLabels: true, iconBorder: 'transparent', dimDarkWallpaper: true,
+  iconTheme: 'glass', iconRadius: 26, iconBlur: 0, iconClarity: 100, iconLens: 100, iconDepth: 100, iconLensLocked: false, iconDepthLocked: false, glyphBlur: 0, glyphClarity: 79, glyphBlurLocked: false, glyphClarityLocked: false, iconRadiusLocked: false, iconBlurLocked: false, iconClarityLocked: false, iconSize: 'medium', iconLabels: true, iconBorder: 'transparent', dimDarkWallpaper: true,
   iconData: {},
   dimDarkWallpaperAmount: 42, dimDarkIconAmount: 42, dimDarkWallpaperLocked: false, dimDarkIconLocked: false,
   dockRadius: 5, dockTransparency: 0, dockBlur: 16, dockRadiusLocked: false, dockTransparencyLocked: false, dockBlurLocked: false,
@@ -259,22 +273,31 @@ function saveMoments(){ return IslandDB.set('island.moments', MOMENTS); }
 function normalizeHomeAppearance(){
   var incoming = (State.settings && State.settings.homeAppearance) || {};
   var base = clone(DEFAULT_HOME_APPEARANCE);
-  base.iconTheme = ['mono','glass','borderless'].indexOf(incoming.iconTheme) >= 0 ? incoming.iconTheme : base.iconTheme;
-  /* 图标圆角（%）：旧版「图标形状」自动换算成对应圆角，升级后外观不变。 */
-  var legacyRadius = { square: base.iconTheme === 'glass' ? 22 : 9, soft: 28, round: 50, pill: base.iconTheme === 'glass' ? 18 : 31 };
+  /* 「文字」主题已删除：旧存档里的 mono 一律迁移为液态玻璃。 */
+  base.iconTheme = ICON_THEMES.indexOf(incoming.iconTheme) >= 0 ? incoming.iconTheme : 'glass';
   var sliderNum = function(v, lo, hi, def){ return (v !== '' && v !== null && v !== undefined && Number.isFinite(Number(v))) ? Math.max(lo, Math.min(hi, Math.round(Number(v)))) : def; };
-  base.iconRadius = sliderNum(incoming.iconRadius, 0, 50, legacyRadius[incoming.iconShape] !== undefined ? legacyRadius[incoming.iconShape] : (base.iconTheme === 'glass' ? 26 : 9));
-  base.iconBlur = sliderNum(incoming.iconBlur, 0, 30, base.iconBlur);
-  base.iconClarity = sliderNum(incoming.iconClarity, 0, 100, base.iconClarity);
+  var inTP = incoming.themeParams && typeof incoming.themeParams === 'object' ? incoming.themeParams : null;
+  var themeParams = {};
+  ICON_THEMES.forEach(function(t){
+    var defs = ICON_THEME_DEFAULTS[t], src = null;
+    if (inTP && inTP[t] && typeof inTP[t] === 'object') src = inTP[t];
+    else if (!inTP && t === base.iconTheme && ['glass','borderless'].indexOf(incoming.iconTheme) >= 0) src = incoming; /* 旧存档：数值是各主题共用的，沿用给当前主题 */
+    themeParams[t] = {};
+    ICON_THEME_KEYS[t].forEach(function(k){
+      var r = ICON_SLIDER_RANGES[k];
+      themeParams[t][k] = sliderNum(src ? src[k] : undefined, r[0], r[1], defs[k]);
+    });
+  });
+  base.themeParams = themeParams;
+  /* 当前生效的数值 = 当前主题那一组；该主题没有的项沿用液态玻璃那组，保证 CSS 变量始终有值 */
+  Object.keys(ICON_SLIDER_RANGES).forEach(function(k){
+    base[k] = themeParams[base.iconTheme][k] !== undefined ? themeParams[base.iconTheme][k] : themeParams.glass[k];
+  });
   base.iconRadiusLocked = incoming.iconRadiusLocked === true;
   base.iconBlurLocked = incoming.iconBlurLocked === true;
   base.iconClarityLocked = incoming.iconClarityLocked === true;
-  base.iconLens = sliderNum(incoming.iconLens, 0, 100, base.iconLens);
-  base.iconDepth = sliderNum(incoming.iconDepth, 0, 100, base.iconDepth);
   base.iconLensLocked = incoming.iconLensLocked === true;
   base.iconDepthLocked = incoming.iconDepthLocked === true;
-  base.glyphBlur = sliderNum(incoming.glyphBlur, 0, 20, base.glyphBlur);
-  base.glyphClarity = sliderNum(incoming.glyphClarity, 0, 100, base.glyphClarity);
   base.glyphBlurLocked = incoming.glyphBlurLocked === true;
   base.glyphClarityLocked = incoming.glyphClarityLocked === true;
   base.dockBlur = sliderNum(incoming.dockBlur, 0, 60, base.dockBlur);

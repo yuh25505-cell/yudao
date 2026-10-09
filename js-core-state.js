@@ -14,7 +14,7 @@ var DEFAULT_STT = {
 var HOME_APP_NAMES = ['聊天','通讯录','相册','日历','备忘录','天气','时钟','设置','电话','浏览器','世界书','音乐'];
 
 var DEFAULT_HOME_APPEARANCE = {
-  iconTheme: 'mono', iconRadius: 9, iconBlur: 10, iconClarity: 50, iconRadiusLocked: false, iconBlurLocked: false, iconClarityLocked: false, iconSize: 'medium', iconLabels: true, iconBorder: 'transparent', dimDarkWallpaper: true,
+  iconTheme: 'mono', iconRadius: 9, iconBlur: 10, iconClarity: 50, glyphBlur: 8, glyphClarity: 60, glyphBlurLocked: false, glyphClarityLocked: false, iconRadiusLocked: false, iconBlurLocked: false, iconClarityLocked: false, iconSize: 'medium', iconLabels: true, iconBorder: 'transparent', dimDarkWallpaper: true,
   iconData: {},
   dimDarkWallpaperAmount: 42, dimDarkIconAmount: 42, dimDarkWallpaperLocked: false, dimDarkIconLocked: false,
   dockRadius: 5, dockTransparency: 0, dockBlur: 16, dockRadiusLocked: false, dockTransparencyLocked: false, dockBlurLocked: false,
@@ -269,6 +269,10 @@ function normalizeHomeAppearance(){
   base.iconRadiusLocked = incoming.iconRadiusLocked === true;
   base.iconBlurLocked = incoming.iconBlurLocked === true;
   base.iconClarityLocked = incoming.iconClarityLocked === true;
+  base.glyphBlur = sliderNum(incoming.glyphBlur, 0, 20, base.glyphBlur);
+  base.glyphClarity = sliderNum(incoming.glyphClarity, 0, 100, base.glyphClarity);
+  base.glyphBlurLocked = incoming.glyphBlurLocked === true;
+  base.glyphClarityLocked = incoming.glyphClarityLocked === true;
   base.dockBlur = sliderNum(incoming.dockBlur, 0, 60, base.dockBlur);
   base.dockBlurLocked = incoming.dockBlurLocked === true;
   base.iconSize = ['small','medium','large'].indexOf(incoming.iconSize) >= 0 ? incoming.iconSize : base.iconSize;

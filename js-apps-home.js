@@ -61,7 +61,7 @@ var LIQUID_GLYPHS = {
   '备忘录': '<path fill-rule="evenodd" d="M7.4 3h9.2A3.4 3.4 0 0 1 20 6.4v11.2a3.4 3.4 0 0 1-3.4 3.4H7.4A3.4 3.4 0 0 1 4 17.6V6.4A3.4 3.4 0 0 1 7.4 3zM8 7.6h8v1.7H8zm0 3.6h8v1.7H8zm0 3.6h5v1.7H8z"/>',
   '天气': '<circle cx="8.2" cy="8.4" r="3.7" opacity=".7"/><path d="M7.6 20a4.3 4.3 0 0 1-.4-8.6 5.6 5.6 0 0 1 10.6 1.4A3.6 3.6 0 0 1 17.4 20z"/>',
   '时钟': '<path fill-rule="evenodd" d="M12 2.4a9.6 9.6 0 1 0 0 19.2 9.6 9.6 0 0 0 0-19.2zM11 6.4h2v5.4l3.5 2.1-1 1.7-4.5-2.7z"/>',
-  '设置': '<g id="lqTeeth"><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(45 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(90 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(135 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(180 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(225 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(270 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(315 12 12)"/></g><circle cx="12" cy="12" r="5.5" fill="none" stroke="url(#lqGlyphGrad)" stroke-width="3.8"/>',
+  '设置': '<g id="lqTeeth"><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(45 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(90 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(135 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(180 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(225 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(270 12 12)"/><rect x="10.1" y="2.4" width="3.8" height="4.6" rx="1.2" transform="rotate(315 12 12)"/></g><path fill-rule="evenodd" d="M12 4.6a7.4 7.4 0 1 0 0 14.8 7.4 7.4 0 0 0 0-14.8zM12 8.4a3.6 3.6 0 1 1 0 7.2 3.6 3.6 0 0 1 0-7.2z"/>',
   '电话': '<path transform="rotate(-135 12 12)" d="M3.2 9.4c0-1.2.6-2 1.7-2.5 4.2-1.7 10.7-1.7 14.2 0 1.1.5 1.7 1.3 1.7 2.5v1.3c0 .9-.6 1.5-1.5 1.6l-2.6.3c-.8.1-1.4-.4-1.5-1.2l-.2-1.7c-.1-.5-.4-.8-.9-.9-1.3-.2-2.6-.2-3.9 0-.5.1-.8.4-.9.9l-.2 1.7c-.1.8-.7 1.3-1.5 1.2l-2.6-.3c-.9-.1-1.5-.7-1.5-1.6z"/>',
   '浏览器': '<path fill-rule="evenodd" d="M12 2.4a9.6 9.6 0 1 0 0 19.2 9.6 9.6 0 0 0 0-19.2zM16.4 7.6l-2.2 6.6-6.6 2.2 2.2-6.6z"/>',
   '世界书': '<path d="M2.8 5.8c3.1-.9 6.2-.6 8.4 1v13c-2.3-1.5-5.4-1.8-8.4-.9z"/><path d="M21.2 5.8c-3.1-.9-6.2-.6-8.4 1v13c2.3-1.5 5.4-1.8 8.4-.9z"/>',
@@ -97,10 +97,18 @@ function setAppIconVisual(iconEl, appName, imageData){
     iconEl.appendChild(img);
   } else if (liquid && LIQUID_GLYPHS[appName]) {
     ensureLiquidDefs();
+    /* 底板模糊层：Dock/桌面图标自己不再用 backdrop-filter，这样里面的符号才能折射到壁纸 */
+    var glass = document.createElement('span');
+    glass.className = 'lq-glass';
+    glass.setAttribute('aria-hidden', 'true');
+    iconEl.appendChild(glass);
     var holder = document.createElement('span');
     holder.className = 'lq-glyph';
     holder.setAttribute('aria-hidden', 'true');
-    holder.innerHTML = '<svg viewBox="0 0 24 24" fill="url(#lqGlyphGrad)">' + LIQUID_GLYPHS[appName] + '</svg>';
+    /* 符号本身也是一片液态玻璃：用符号轮廓做遮罩，叠一层模糊壁纸 + 极细边缘 */
+    var maskSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000">' + LIQUID_GLYPHS[appName] + '</svg>';
+    holder.style.setProperty('--lq-mask', 'url("data:image/svg+xml,' + encodeURIComponent(maskSvg) + '")');
+    holder.innerHTML = '<i class="lq-gblur"></i><svg viewBox="0 0 24 24" fill="url(#lqGlyphGrad)">' + LIQUID_GLYPHS[appName] + '</svg>';
     iconEl.appendChild(holder);
   } else {
     var glyph = document.createElement('span');
@@ -342,6 +350,8 @@ var HOME_SLIDERS = {
   iconRadius:  { lockKey: 'iconRadiusLocked',  min: 0, max: 50,  unit: '%' },
   iconBlur:    { lockKey: 'iconBlurLocked',    min: 0, max: 30,  unit: 'px' },
   iconClarity: { lockKey: 'iconClarityLocked', min: 0, max: 100, unit: '%' },
+  glyphBlur:   { lockKey: 'glyphBlurLocked',   min: 0, max: 20,  unit: 'px' },
+  glyphClarity:{ lockKey: 'glyphClarityLocked',min: 0, max: 100, unit: '%' },
   dockBlur:    { lockKey: 'dockBlurLocked',    min: 0, max: 60,  unit: 'px' }
 };
 
@@ -352,6 +362,10 @@ function applyHomeGlassVars(a){
   st.setProperty('--icon-radius', a.iconRadius + '%');
   st.setProperty('--lq-blur', a.iconBlur + 'px');
   st.setProperty('--lq-fill', String(Math.max(0, 2 * (1 - a.iconClarity / 100))));
+  st.setProperty('--lq-gblur', a.glyphBlur + 'px');
+  /* 符号清晰度 0→100：符号本体填充 .12→.92，越高越实、越清楚；越低越像透明玻璃 */
+  st.setProperty('--lq-gfill', String(.12 + .8 * a.glyphClarity / 100));
+  st.setProperty('--lq-gedge', String(.30 + .45 * a.glyphClarity / 100));
   st.setProperty('--dock-blur', a.dockBlur + 'px');
 }
 

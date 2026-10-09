@@ -272,14 +272,13 @@ html[data-theme="dark"] .home[data-dim-dark-wallpaper="off"] .app-icon.has-custo
   position:relative; isolation:isolate; overflow:hidden; border:none; color:#fff;
   border-radius:22.5%;
   background:var(--lq-bg);
-  -webkit-backdrop-filter:blur(var(--lq-blur,10px)) saturate(1.9);
-  backdrop-filter:blur(var(--lq-blur,10px)) saturate(1.9);
+  -webkit-backdrop-filter:none; backdrop-filter:none;
   box-shadow:
-    inset 0 .6px .4px rgba(255,255,255,.70),
-    inset 0 -.6px .4px rgba(255,255,255,.34),
-    inset .6px 0 .4px rgba(255,255,255,.24),
-    inset -.6px 0 .4px rgba(255,255,255,.24),
-    inset 0 0 10px rgba(255,255,255,.14),
+    inset 0 .6px .4px rgba(255,255,255,.30),
+    inset 0 -.6px .4px rgba(255,255,255,.14),
+    inset .6px 0 .4px rgba(255,255,255,.09),
+    inset -.6px 0 .4px rgba(255,255,255,.09),
+    inset 0 0 10px rgba(255,255,255,.08),
     0 8px 18px rgba(0,0,0,.16),
     0 1px 2px rgba(0,0,0,.12);
 }
@@ -290,11 +289,11 @@ html[data-theme="dark"] .app-icon.is-liquid{
     radial-gradient(90% 70% at 90% 112%, rgba(255,255,255,calc(.16 * var(--lq-fill,1))), rgba(255,255,255,0) 60%),
     linear-gradient(160deg, rgba(255,255,255,calc(.13 * var(--lq-fill,1))), rgba(255,255,255,calc(.03 * var(--lq-fill,1))));
   box-shadow:
-    inset 0 .6px .4px rgba(255,255,255,.60),
-    inset 0 -.6px .4px rgba(255,255,255,.24),
-    inset .6px 0 .4px rgba(255,255,255,.18),
-    inset -.6px 0 .4px rgba(255,255,255,.18),
-    inset 0 0 10px rgba(255,255,255,.10),
+    inset 0 .6px .4px rgba(255,255,255,.28),
+    inset 0 -.6px .4px rgba(255,255,255,.11),
+    inset .6px 0 .4px rgba(255,255,255,.07),
+    inset -.6px 0 .4px rgba(255,255,255,.07),
+    inset 0 0 10px rgba(255,255,255,.06),
     0 8px 20px rgba(0,0,0,.40),
     0 1px 2px rgba(0,0,0,.30);
 }
@@ -308,8 +307,8 @@ html[data-theme="dark"] .app-icon.is-liquid{
   -webkit-backdrop-filter:none; backdrop-filter:none;
   background:rgba(255,255,255,calc(var(--dock-effective-alpha, .075) * .32));
   box-shadow:
-    inset 0 .6px .4px rgba(255,255,255,.55),
-    inset 0 -.6px .4px rgba(255,255,255,.22),
+    inset 0 .6px .4px rgba(255,255,255,.26),
+    inset 0 -.6px .4px rgba(255,255,255,.10),
     inset 0 0 12px rgba(255,255,255,.10),
     0 12px 30px rgba(0,0,0,.20);
 }
@@ -321,7 +320,7 @@ html[data-theme="dark"] .app-icon.is-liquid{
 
 .home .dock::after{
   content:""; position:absolute; inset:0; z-index:0; border-radius:inherit; padding:var(--lq-rim,.6px); pointer-events:none;
-  background:linear-gradient(135deg, rgba(255,255,255,.85), rgba(255,255,255,.05) 36%, rgba(255,255,255,.05) 64%, rgba(255,255,255,.65));
+  background:linear-gradient(135deg, rgba(255,255,255,.42), rgba(255,255,255,.03) 38%, rgba(255,255,255,.03) 62%, rgba(255,255,255,.32));
   -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite:xor;
   mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
@@ -330,7 +329,7 @@ html[data-theme="dark"] .app-icon.is-liquid{
 /* 边缘折射高光：左上与右下最亮、两侧渐隐，模拟玻璃边缘受光 */
 .app-icon.is-liquid::before{
   content:""; position:absolute; inset:0; z-index:2; border-radius:inherit; padding:var(--lq-rim,.6px); pointer-events:none;
-  background:linear-gradient(135deg, rgba(255,255,255,.95), rgba(255,255,255,.06) 36%, rgba(255,255,255,.06) 64%, rgba(255,255,255,.78));
+  background:linear-gradient(135deg, rgba(255,255,255,.46), rgba(255,255,255,.03) 38%, rgba(255,255,255,.03) 62%, rgba(255,255,255,.34));
   -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite:xor;
   mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
@@ -342,17 +341,33 @@ html[data-theme="dark"] .app-icon.is-liquid{
   background:linear-gradient(180deg, rgba(255,255,255,calc(.16 * var(--lq-fill,1))), rgba(255,255,255,0)); pointer-events:none;
 }
 
+.app-icon.is-liquid .lq-glass{
+  position:absolute; inset:0; z-index:0; border-radius:inherit; pointer-events:none;
+  -webkit-backdrop-filter:blur(var(--lq-blur,10px)) saturate(1.9); backdrop-filter:blur(var(--lq-blur,10px)) saturate(1.9);
+}
+
+/* 符号 = 一片小的液态玻璃：.lq-gblur 用符号轮廓遮罩出一块模糊的壁纸（模糊度可调），
+ * 上面的 svg 画半透明本体（清晰度可调）和极细的边缘光。 */
 .app-icon.is-liquid .lq-glyph{ position:relative; z-index:3; width:100%; height:100%; display:grid; place-items:center; }
 
+.app-icon.is-liquid .lq-gblur{
+  position:absolute; left:23%; top:23%; width:54%; height:54%; pointer-events:none;
+  -webkit-mask:var(--lq-mask) center / 100% 100% no-repeat; mask:var(--lq-mask) center / 100% 100% no-repeat;
+  -webkit-backdrop-filter:blur(var(--lq-gblur,8px)) saturate(1.7) brightness(1.08); backdrop-filter:blur(var(--lq-gblur,8px)) saturate(1.7) brightness(1.08);
+  background:rgba(255,255,255,.08);
+}
+
 .app-icon.is-liquid .lq-glyph svg{
-  width:54%; height:54%; display:block; overflow:visible; stroke:none;
-  filter:drop-shadow(0 0 .6px rgba(255,255,255,.65)) drop-shadow(0 1.6px 2.2px rgba(0,0,0,.30));
+  position:relative; width:54%; height:54%; display:block; overflow:visible;
+  fill-opacity:var(--lq-gfill,.6);
+  stroke:rgba(255,255,255,.9); stroke-opacity:var(--lq-gedge,.5); stroke-width:.35; stroke-linejoin:round; paint-order:stroke;
+  filter:drop-shadow(0 1px 1.6px rgba(0,0,0,.20));
 }
 
 .app-icon.is-liquid.has-custom-image img{ position:relative; z-index:0; border-radius:inherit; }
 
 .app:active .app-icon.is-liquid,
-.dock .app:active .app-icon.is-liquid{ background:var(--lq-bg); color:#fff; filter:brightness(.88); }
+.dock .app:active .app-icon.is-liquid{ background:var(--lq-bg); color:#fff; }
 
 /* 图标圆角：由「图标调节 › 圆角」拉条控制（%，相对图标边长），对所有图标主题生效 */
 .home .app-icon,

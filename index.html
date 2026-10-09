@@ -1554,8 +1554,12 @@
 <div class="dock-control-row"><span class="dock-control-label">符号清晰</span><input aria-label="液态玻璃符号清晰度" class="dock-control-range" id="glyphClarityRange" max="100" min="0" step="1" type="range" value="79"/><strong class="dock-control-value" id="glyphClarityValue">79%</strong><button aria-pressed="false" class="dock-control-lock" id="glyphClarityLock" type="button">锁定</button></div>
 </div>
 </div>
-<div class="appearance-row"><div class="appearance-copy"><strong>图标尺寸</strong><em>调整主屏幕与 Dock 中图标的整体比例</em></div></div><div class="appearance-options"><button class="appearance-pill" data-home-icon-size="small" type="button">小</button><button class="appearance-pill" data-home-icon-size="medium" type="button">中</button><button class="appearance-pill" data-home-icon-size="large" type="button">大</button></div>
+<div class="appearance-row"><div class="appearance-copy"><strong>屏幕比例</strong><em>图标相对默认大小的比例，主屏幕与 Dock 同步，可填 50–130</em></div></div>
+<div class="num-row"><span class="num-row-label">比例</span><input aria-label="屏幕比例" class="num-input" id="iconScaleInput" inputmode="numeric" max="130" min="50" step="1" type="number" value="100"/><span class="num-unit">%</span></div>
 <button aria-checked="true" class="appearance-row" id="homeIconLabelsToggle" role="switch" type="button"><span class="appearance-copy"><strong>显示图标名称</strong></span><span aria-hidden="true" class="appearance-switch"></span></button>
+<div class="num-row"><span class="num-row-label">名称字号</span><input aria-label="图标名称字号" class="num-input" id="labelSizeInput" inputmode="numeric" max="18" min="8" step="1" type="number" value="11"/><span class="num-unit">px</span></div>
+<div class="dock-control-divider"></div>
+<div class="num-row"><span class="num-row-label">名称颜色</span><input aria-label="图标名称颜色" class="color-input" id="labelColorPicker" type="color" value="#ffffff"/><input aria-label="图标名称颜色色值" autocapitalize="characters" autocomplete="off" class="num-input hex" id="labelColorInput" maxlength="7" spellcheck="false" type="text" value="#FFFFFF"/><button class="dock-control-lock" id="labelColorReset" type="button">默认</button></div>
 </div>
 <div class="settings-section-title">主屏幕 · 壁纸</div><div class="appearance-menu"><div class="appearance-upload" style="border-top:0"><div class="appearance-upload-copy"><strong>本地图片壁纸</strong><em id="wallpaperState">未选择本地图片</em></div><button class="appearance-upload-btn" id="wallpaperUploadBtn" type="button">导入图片</button><input accept="image/*" hidden="" id="wallpaperInput" type="file"/></div></div><div class="appearance-menu"><button aria-checked="true" class="appearance-row" id="dimDarkWallpaperToggle" role="switch" type="button"><span class="appearance-copy"><strong>夜间压暗壁纸与本地图标</strong></span><span aria-hidden="true" class="appearance-switch"></span></button></div><div class="dark-dim-menu">
 <div class="dark-dim-row">
@@ -1573,6 +1577,8 @@
 </div>
 </div>
 <div class="settings-section-title">主屏幕 · Dock</div><div class="appearance-menu dock-settings-menu">
+<button aria-checked="false" class="appearance-row" id="dockNoBgToggle" role="switch" type="button"><span class="appearance-copy"><strong>无 Dock 栏背景</strong><em>开启后 Dock 只留图标，没有底板</em></span><span aria-hidden="true" class="appearance-switch"></span></button>
+<div class="dock-control-divider"></div>
 <div class="dock-control-row"><span class="dock-control-label">圆角</span><input aria-label="Dock圆角" class="dock-control-range" id="dockRadiusRange" max="40" min="0" step="1" type="range" value="5"/><strong class="dock-control-value" id="dockRadiusValue">5px</strong><button aria-pressed="false" class="dock-control-lock" id="dockRadiusLock" type="button">锁定</button></div>
 <div class="dock-control-divider"></div>
 <div class="dock-control-row"><span class="dock-control-label">透明度</span><input aria-label="Dock透明度" class="dock-control-range" id="dockTransparencyRange" max="100" min="0" step="1" type="range" value="0"/><strong class="dock-control-value" id="dockTransparencyValue">0%</strong><button aria-pressed="false" class="dock-control-lock" id="dockTransparencyLock" type="button">锁定</button></div>

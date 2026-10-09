@@ -218,7 +218,9 @@ function applyHomeAppearance(){
   var wallpaper = document.querySelector('.wallpaper');
   if (home) {
     home.setAttribute('data-icon-theme', a.iconTheme);
-    home.setAttribute('data-icon-size', a.iconSize);
+    home.style.setProperty('--icon-scale', String(a.iconScale / 100));
+    home.setAttribute('data-dock-bg', a.dockNoBackground ? 'off' : 'on');
+    applyIconLabelStyle(a);
     home.setAttribute('data-icon-labels', a.iconLabels ? 'on' : 'off');
     home.style.setProperty('--dark-icon-brightness', String(1 - a.dimDarkIconAmount / 100));
     home.setAttribute('data-dim-dark-wallpaper', a.dimDarkWallpaper ? 'on' : 'off');
@@ -265,11 +267,12 @@ function renderHomeAppearanceOptions(){
   $$('[data-icon-group]').forEach(function(g){ g.hidden = g.getAttribute('data-icon-group') !== a.iconTheme; });
   var dimWallpaper = $('dimDarkWallpaperToggle');
   if (dimWallpaper) { dimWallpaper.classList.toggle('is-on', a.dimDarkWallpaper); dimWallpaper.setAttribute('aria-checked', a.dimDarkWallpaper ? 'true' : 'false'); }
-  $$('[data-home-icon-size]').forEach(function(btn){
-    var on = btn.dataset.homeIconSize === a.iconSize;
-    btn.classList.toggle('is-on', on);
-    btn.setAttribute('aria-checked', on ? 'true' : 'false');
-  });
+  var scaleIn = $('iconScaleInput'); if (scaleIn && document.activeElement !== scaleIn) scaleIn.value = String(a.iconScale);
+  var lsIn = $('labelSizeInput'); if (lsIn && document.activeElement !== lsIn) lsIn.value = String(a.labelSize);
+  var lcPick = $('labelColorPicker'); if (lcPick) lcPick.value = a.labelColor;
+  var lcIn = $('labelColorInput'); if (lcIn && document.activeElement !== lcIn) lcIn.value = a.labelColor.toUpperCase();
+  var dockBg = $('dockNoBgToggle');
+  if (dockBg) { dockBg.classList.toggle('is-on', a.dockNoBackground); dockBg.setAttribute('aria-checked', a.dockNoBackground ? 'true' : 'false'); }
   var labels = $('homeIconLabelsToggle');
   if (labels) {
     labels.classList.toggle('is-on', a.iconLabels);
@@ -322,7 +325,6 @@ function setHomeIconOption(kind, value){
      * 与「锁定」无关——锁定只是防误触拉条，不会让数值卡在上一个主题。 */
     a.iconTheme = value;
   }
-  if (kind === 'size' && ['small','medium','large'].indexOf(value) >= 0) a.iconSize = value;
   applyHomeAppearance();
   saveSettings();
 }
@@ -610,6 +612,54 @@ function setDimDarkWallpaper(on){
   saveSettings();
 }
 
+
+/* ---------- 屏幕比例 / 图标名称样式 / 无 Dock 背景 ---------- */
+function labelShadowFor(hex){
+  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  var lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  /* 浅色字配深色柔边，深色字配浅色柔边：在任何壁纸（尤其白色/浅色）上都能看清 */
+  return lum >= 0.55
+    ? '0 0 2px rgba(0,0,0,.60), 0 1px 3px rgba(0,0,0,.45), 0 0 8px rgba(0,0,0,.28)'
+    : '0 0 2px rgba(255,255,255,.75), 0 0 6px rgba(255,255,255,.50)';
+}
+
+function applyIconLabelStyle(a){
+  var home = $('home'); if (!home) return;
+  home.style.setProperty('--label-size', a.labelSize + 'px');
+  home.style.setProperty('--label-color', a.labelColor);
+  home.style.setProperty('--label-shadow', labelShadowFor(a.labelColor));
+}
+
+function setIconScale(v){
+  var a = normalizeHomeAppearance();
+  var n = Number(v);
+  if (!Number.isFinite(n)) { renderHomeAppearanceOptions(); return; }
+  a.iconScale = Math.max(50, Math.min(130, Math.round(n)));
+  applyHomeAppearance(); saveSettings();
+}
+
+function setLabelSize(v){
+  var a = normalizeHomeAppearance();
+  var n = Number(v);
+  if (!Number.isFinite(n)) { renderHomeAppearanceOptions(); return; }
+  a.labelSize = Math.max(8, Math.min(18, Math.round(n)));
+  applyHomeAppearance(); saveSettings();
+}
+
+function setLabelColor(v){
+  var a = normalizeHomeAppearance();
+  var t = String(v || '').trim().replace(/^#/, '');
+  if (/^[0-9a-fA-F]{3}$/.test(t)) t = t.replace(/(.)/g, '$1$1');
+  if (!/^[0-9a-fA-F]{6}$/.test(t)) { renderHomeAppearanceOptions(); toast('颜色格式应为 #RRGGBB'); return; }
+  a.labelColor = '#' + t.toLowerCase();
+  applyHomeAppearance(); saveSettings();
+}
+
+function setDockNoBackground(on){
+  var a = normalizeHomeAppearance();
+  a.dockNoBackground = !!on;
+  applyHomeAppearance(); saveSettings();
+}
 
 function setHomeIconLabels(on){
   var a = normalizeHomeAppearance();

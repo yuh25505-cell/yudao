@@ -247,12 +247,6 @@ html[data-theme="dark"] .home[data-dim-dark-wallpaper="off"] .app-icon.has-custo
 
 .widget-chip.is-on{background:var(--fg);color:var(--bg)}
 
-.home[data-icon-size="small"] .app-icon{width:48px}
-
-.home[data-icon-size="medium"] .app-icon{width:58px}
-
-.home[data-icon-size="large"] .app-icon{width:66px}
-
 .home[data-icon-labels="off"] .app-name{display:none}
 
 .home[data-icon-theme="borderless"] .app-icon{background:transparent;color:var(--tile-fg);border:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
@@ -378,3 +372,32 @@ html.lq-lens .home .dock::before{
 .icon-adj-group-chev{ width:18px; height:18px; flex:none; color:var(--fg-soft); transition:transform .22s ease; }
 .icon-adj-group.is-open .icon-adj-group-chev{ transform:rotate(180deg); }
 .icon-adj-group-body[hidden]{ display:none; }
+
+
+/* ===== 屏幕比例：100% = 58px，主屏幕与 Dock 的图标同步缩放 ===== */
+.home .app-icon,
+.home .dock .app-icon{ width:calc(58px * var(--icon-scale,1)); max-width:100%; }
+.app-icon.icon-library-preview{ width:58px; }
+
+/* ===== 图标名称：自定义字号 / 颜色。默认白色，配一圈柔边，白色或浅色壁纸上也看得清 ===== */
+.home .app-name{
+  font-size:calc(var(--label-size,11px) * var(--island-font-size-scale));
+  font-weight:var(--island-fw-600,600);
+  color:var(--label-color,#fff);
+  text-shadow:var(--label-shadow, 0 0 2px rgba(0,0,0,.60), 0 1px 3px rgba(0,0,0,.45), 0 0 8px rgba(0,0,0,.28));
+}
+
+/* ===== 无 Dock 栏背景：只留图标 ===== */
+.home[data-dock-bg="off"] .dock{ background:none; box-shadow:none; border:none; -webkit-backdrop-filter:none; backdrop-filter:none; }
+.home[data-dock-bg="off"] .dock::before,
+.home[data-dock-bg="off"] .dock::after{ display:none; }
+
+/* ===== 设置里的数值输入行 ===== */
+.num-row{ display:flex; align-items:center; gap:10px; min-height:58px; padding:10px 16px; }
+.num-row-label{ flex:none; min-width:72px; white-space:nowrap; font-size:calc(13.5px * var(--island-font-size-scale)); font-weight:var(--island-fw-600); color:var(--fg); }
+.num-input{ width:84px; min-height:36px; padding:6px 10px; border-radius:10px; border:1px solid var(--track); background:var(--bubble-bg); color:var(--fg); font-size:calc(14px * var(--island-font-size-scale)); font-variant-numeric:tabular-nums; text-align:center; outline:none; -moz-appearance:textfield; }
+.num-input::-webkit-outer-spin-button,.num-input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+.num-input:focus{ border-color:var(--fg); }
+.num-input.hex{ width:104px; text-transform:uppercase; letter-spacing:.04em; }
+.num-unit{ font-size:calc(13px * var(--island-font-size-scale)); color:var(--fg-soft); }
+.color-input{ flex:none; width:38px; height:36px; padding:2px; border-radius:10px; border:1px solid var(--track); background:var(--bubble-bg); cursor:pointer; }

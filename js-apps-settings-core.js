@@ -410,6 +410,11 @@ function bindSettingsAppearanceEvents(){
       btn.addEventListener('click', function(e){ e.stopPropagation(); setWidgetSize(key, btn.dataset.widgetSize); });
     });
   });
+  $$('#calendarBgChips [data-cal-bg]').forEach(function(btn){
+    btn.addEventListener('click', function(e){ e.stopPropagation(); setCalendarBgStyle(btn.dataset.calBg); });
+  });
+  bindSmoothRange($('calGlassBlurRange'), function(v){ setCalendarGlassSetting('blur', v); }, function(){ scheduleSettingsSave(200); });
+  bindSmoothRange($('calGlassTransparencyRange'), function(v){ setCalendarGlassSetting('transparency', v); }, function(){ scheduleSettingsSave(200); });
   $$('.js-chat-appearance-back').forEach(function(btn){ btn.addEventListener('click', closeChatAppearance); });
   $$('.chat-theme-option').forEach(function(btn){
     btn.addEventListener('click', function(){ setChatAppearance(btn.dataset.chatAppearanceChoice); });

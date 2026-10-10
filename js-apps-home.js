@@ -11,16 +11,24 @@ function tick(){
 
 /* 主屏幕 4×6 网格：行高 = 一个应用图标格（图标 + 名称）的实际高度。
  * 日历（4×2）、音乐（2×2）按网格跨行，高度因此自动跟随图标大小 / 名称开关 / 字号。 */
+/* 组件（日历 4×2 / 音乐 2×2 / 拍立得 2×2）占两行，高度 = 2×行高 + 行距。
+ * 关闭图标名称后一个图标格只剩图标本身（约 58px），两行只有 ~130px，日历月历、音乐控制栏会被挤扁、裁掉。
+ * 因此行高设一个下限，保证两行高度不低于 WIDGET_MIN_H；开着名称时行高本来就更高，不受影响。 */
+var WIDGET_MIN_H = 156;
+
 function syncHomeGridRows(){
   var home = $('home');
   var grid = $('homeGrid');
   var app = grid && grid.querySelector('.app');
   if (!home || !app) return;
-  var rowH = app.offsetHeight;
-  if (!rowH) return;
+  var rowMeasured = app.offsetHeight;
+  if (!rowMeasured) return;
+  var rowFor = function(g){ return Math.max(rowMeasured, Math.ceil((WIDGET_MIN_H - g) / 2)); };
+  var rowH = rowMeasured;
   /* 主屏幕不再上下滚动：先按默认行距量，若 6 行放不进可用高度（小屏手机），就把行距收紧到刚好放下。 */
   home.style.removeProperty('--home-gap-y');
   var gap = parseFloat(getComputedStyle(grid).rowGap) || 0;
+  rowH = rowFor(gap);
   var body = grid.parentElement;
   if (body) {
     var cs = getComputedStyle(body);
@@ -28,6 +36,7 @@ function syncHomeGridRows(){
     if (avail > 0 && rowH * 6 + gap * 5 > avail) {
       gap = Math.max(4, Math.floor((avail - rowH * 6) / 5));
       home.style.setProperty('--home-gap-y', gap + 'px');
+      rowH = rowFor(gap); /* 行距收紧后，两行高度会变小，行高相应补回去 */
     }
   }
   home.style.setProperty('--home-row-h', rowH + 'px');
@@ -235,6 +244,7 @@ function applyHomeAppearance(){
     home.setAttribute('data-widget-calendar', a.widgets.calendar && a.widgets.calendar.enabled ? 'on' : 'off');
     home.setAttribute('data-widget-music', a.widgets.music && a.widgets.music.enabled ? 'on' : 'off');
     home.setAttribute('data-widget-polaroid', a.widgets.polaroid && a.widgets.polaroid.enabled ? 'on' : 'off');
+    applyCalendarWidgetStyle(a);
   }
   var dock = document.querySelector('.dock');
   if (dock) {
@@ -316,6 +326,7 @@ function renderHomeAppearanceOptions(){
   if (dimIconLock) { dimIconLock.classList.toggle('is-on', a.dimDarkIconLocked); dimIconLock.setAttribute('aria-pressed', a.dimDarkIconLocked ? 'true' : 'false'); dimIconLock.textContent = a.dimDarkIconLocked ? '已锁定' : '锁定'; }
   var wallpaperState = $('wallpaperState');
   if (wallpaperState) wallpaperState.textContent = a.wallpaperData ? '已使用本地图片' : '未选择本地图片';
+  renderCalendarStyleControls(a);
   $$('.widget-card').forEach(function(card){
     var key = card.dataset.widgetCard;
     var cfg = a.widgets[key] || {enabled:false,size:'medium'};
@@ -725,6 +736,68 @@ function setHomeIconLabels(on){
   var a = normalizeHomeAppearance();
   a.iconLabels = !!on;
   queueHomeAppearanceApply();
+}
+
+
+/* ---------- 日历组件背景：默认 / 毛玻璃 ---------- */
+function calendarWidgetConfig(a){
+  var c = a && a.widgets && a.widgets.calendar;
+  return {
+    style: c && c.bgStyle === 'glass' ? 'glass' : 'default',
+    blur: c && Number.isFinite(Number(c.glassBlur)) ? Number(c.glassBlur) : 20,
+    transparency: c && Number.isFinite(Number(c.glassTransparency)) ? Number(c.glassTransparency) : 40
+  };
+}
+
+/* 把样式写到桌面：data-cal-bg 决定用不用毛玻璃，两个变量决定模糊与透明（拉条拖动时也走这里，很轻） */
+function applyCalendarWidgetStyle(a){
+  var home = $('home'); if (!home) return;
+  var c = calendarWidgetConfig(a || normalizeHomeAppearance());
+  if (home.getAttribute('data-cal-bg') !== c.style) home.setAttribute('data-cal-bg', c.style);
+  home.style.setProperty('--cal-glass-blur', c.blur + 'px');
+  home.style.setProperty('--cal-glass-k', String(Math.max(0, Math.min(1, 1 - c.transparency / 100))));
+}
+
+function renderCalendarGlassSlider(rangeId, valueId, value, max, unit){
+  var range = $(rangeId), valueEl = $(valueId);
+  if (range) {
+    if (document.activeElement !== range) range.value = String(value);
+    range.style.setProperty('--dock-range-pct', (value / max * 100) + '%');
+  }
+  if (valueEl) valueEl.textContent = value + unit;
+}
+
+function renderCalendarStyleControls(a){
+  var c = calendarWidgetConfig(a);
+  $$('[data-cal-bg]').forEach(function(btn){
+    if (!btn.classList.contains('widget-chip')) return;
+    var on = btn.dataset.calBg === c.style;
+    btn.classList.toggle('is-on', on);
+    btn.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+  var box = $('calendarGlassControls'); if (box) box.hidden = c.style !== 'glass';
+  renderCalendarGlassSlider('calGlassBlurRange', 'calGlassBlurValue', c.blur, 40, 'px');
+  renderCalendarGlassSlider('calGlassTransparencyRange', 'calGlassTransparencyValue', c.transparency, 100, '%');
+}
+
+function setCalendarBgStyle(style){
+  var a = normalizeHomeAppearance();
+  if (!a.widgets.calendar) return;
+  a.widgets.calendar.bgStyle = style === 'glass' ? 'glass' : 'default';
+  queueHomeAppearanceApply();
+}
+
+/* 拉条拖动：只改变量与数值，不整屏重应用；松手后统一存盘 */
+function setCalendarGlassSetting(kind, value){
+  var a = State.settings && State.settings.homeAppearance;
+  if (!a || !a.widgets || !a.widgets.calendar) return;
+  var n = Number(value); if (!Number.isFinite(n)) return;
+  if (kind === 'blur') a.widgets.calendar.glassBlur = Math.max(0, Math.min(40, Math.round(n)));
+  else a.widgets.calendar.glassTransparency = Math.max(0, Math.min(100, Math.round(n)));
+  applyCalendarWidgetStyle(a);
+  var c = calendarWidgetConfig(a);
+  renderCalendarGlassSlider('calGlassBlurRange', 'calGlassBlurValue', c.blur, 40, 'px');
+  renderCalendarGlassSlider('calGlassTransparencyRange', 'calGlassTransparencyValue', c.transparency, 100, '%');
 }
 
 

@@ -45,17 +45,24 @@ function init(){
   applyFontPreference();
   bindEvents();
   refreshChangelog(false);
+  /* 启动层动画期间尽量别让主线程连续跑太久：每一段重活之间让出一帧，动画不再被"一口气"卡住。 */
   loadState().then(function(){
     applyChatAppearance();
     applyThemePreference();
     applyHomeAppearance();
     applyFontPreference();
+    return yieldToPaint();
+  }).then(function(){
     renderAll();
+    return yieldToPaint();
+  }).then(function(){
     refreshApiState();
     refreshSecondaryApiState();
     refreshVectorMemoryApiState();
     refreshSttState();
     renderNotificationSettings();
+    return yieldToPaint();
+  }).then(function(){
     startProactiveScheduler();
     handleNotificationDeepLink();
   }).catch(function(err){
@@ -90,8 +97,10 @@ window.IslandBackground = {
 
 window.Island = {
   reset: function(){
-    if (!window.confirm('确定要清除 岛屿 的所有本地数据吗？此操作不可撤销。')) return;
-    IslandDB.clear().then(function(){ location.reload(); });
+    islandConfirm('确定要清除 岛屿 的所有本地数据吗？此操作不可撤销。', {title:'清除所有数据', confirmText:'清除', danger:true}).then(function(ok){
+      if (!ok) return;
+      IslandDB.clear().then(function(){ location.reload(); });
+    });
   },
   export: function(){
     return buildBackupPayload().data;
